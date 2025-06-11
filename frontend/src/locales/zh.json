@@ -1,0 +1,186 @@
+{
+  "app": {
+    "title": "VISoR 平台",
+    "subtitle": "体积成像与同步即时扫描读出技术",
+    "loading": "加载中...",
+    "error": "错误",
+    "retry": "重试",
+    "close": "关闭"
+  },
+  "navigation": {
+    "home": "首页",
+    "about": "关于",
+    "specimens": "标本",
+    "viewer": "查看器",
+    "documentation": "文档",
+    "language": "语言"
+  },
+  "home": {
+    "hero": {
+      "title": "VISoR 平台",
+      "subtitle": "高通量、高质量脑图谱构建",
+      "description": "体积成像与同步即时扫描读出（VISoR）技术，用于从小鼠到人类的微米分辨率脑图谱构建。",
+      "getStarted": "开始使用",
+      "learnMore": "了解更多"
+    },
+    "features": {
+      "title": "核心功能",
+      "multiResolution": {
+        "title": "多分辨率成像",
+        "description": "8级金字塔层级，从64³到7296×6016×7040体素"
+      },
+      "multiChannel": {
+        "title": "多通道荧光",
+        "description": "4个波长通道：405nm、488nm、561nm、640nm"
+      },
+      "brainAtlas": {
+        "title": "脑图谱集成",
+        "description": "241个脑区层次化组织结构"
+      },
+      "3dVisualization": {
+        "title": "3D可视化",
+        "description": "交互式3D脑壳渲染和坐标映射"
+      }
+    },
+    "specimens": {
+      "title": "演示标本",
+      "description": "探索高分辨率脑成像数据集",
+      "mouseBrain": "小鼠大脑",
+      "mouseBody": "小鼠全身",
+      "macaqueBrain": "猕猴大脑",
+      "humanBrain": "人类大脑",
+      "viewDetails": "查看详情",
+      "openViewer": "打开查看器"
+    }
+  },
+  "viewer": {
+    "title": "图谱查看器",
+    "loading": "加载标本数据中...",
+    "views": {
+      "grid": "网格视图",
+      "sagittal": "矢状面",
+      "coronal": "冠状面",
+      "horizontal": "水平面",
+      "3d": "3D视图"
+    },
+    "controls": {
+      "zoom": "缩放",
+      "pan": "平移",
+      "slice": "切片",
+      "reset": "重置视图",
+      "maximize": "最大化",
+      "minimize": "返回网格",
+      "sync": "同步视图",
+      "crosshair": "显示十字线"
+    },
+    "status": {
+      "coordinates": "坐标",
+      "position": "位置",
+      "zoom": "缩放",
+      "level": "级别",
+      "slice": "切片",
+      "region": "脑区",
+      "channel": "通道"
+    },
+    "keyboard": {
+      "title": "键盘快捷键",
+      "arrows": "方向键：导航切片",
+      "plus": "+/-：放大/缩小",
+      "zero": "0：重置缩放",
+      "numbers": "1/2/3/4：最大化视图",
+      "escape": "Esc/G：返回网格"
+    }
+  },
+  "controls": {
+    "metadata": {
+      "title": "元数据",
+      "specimen": "标本",
+      "species": "物种",
+      "description": "描述",
+      "dimensions": "尺寸",
+      "resolution": "分辨率",
+      "channels": "通道",
+      "fileSize": "文件大小",
+      "dataType": "数据类型",
+      "coordinateSystem": "坐标系统"
+    },
+    "channels": {
+      "title": "通道",
+      "channel": "通道",
+      "wavelength": "波长",
+      "enabled": "启用",
+      "brightness": "亮度",
+      "contrast": "对比度",
+      "gamma": "伽马",
+      "blendMode": "混合模式",
+      "resetAll": "重置全部"
+    },
+    "atlas": {
+      "title": "图谱",
+      "enabled": "显示图谱",
+      "opacity": "透明度",
+      "colorMode": "颜色模式",
+      "showLabels": "显示标签",
+      "labelSize": "标签大小",
+      "showBorders": "显示边界",
+      "borderWidth": "边界宽度"
+    },
+    "regions": {
+      "title": "脑区",
+      "search": "搜索脑区...",
+      "total": "总脑区数",
+      "selected": "已选择",
+      "highlighted": "已高亮",
+      "showAll": "显示全部",
+      "hideAll": "隐藏全部",
+      "expandAll": "展开全部",
+      "collapseAll": "折叠全部",
+      "level": "级别",
+      "hierarchy": "层次结构"
+    }
+  },
+  "regions": {
+    "pick": "点击选择脑区",
+    "picked": "已选择脑区",
+    "noRegion": "未找到脑区",
+    "abbreviation": "缩写",
+    "volume": "体积",
+    "centroid": "质心",
+    "boundingBox": "边界框",
+    "statistics": "统计信息"
+  },
+  "errors": {
+    "networkError": "网络连接错误",
+    "dataError": "数据加载错误",
+    "renderingError": "渲染错误",
+    "unknownError": "发生未知错误",
+    "retryAction": "请重试",
+    "contactSupport": "如果问题持续存在，请联系技术支持"
+  },
+  "units": {
+    "pixels": "像素",
+    "microns": "微米",
+    "millimeters": "毫米",
+    "bytes": "字节",
+    "kilobytes": "千字节",
+    "megabytes": "兆字节",
+    "gigabytes": "吉字节",
+    "voxels": "体素"
+  },
+  "about": {
+    "title": "关于VISoR平台",
+    "description": "VISoR平台是一个综合性的基于Web的解决方案，用于探索高分辨率脑成像数据集。采用现代Web技术构建，为研究人员提供直观的多尺度神经成像数据导航工具。",
+    "technology": "技术栈",
+    "features": "平台功能",
+    "contact": "联系信息"
+  },
+  "footer": {
+    "copyright": "© 2024 VISoR平台。保留所有权利。",
+    "links": {
+      "privacy": "隐私政策",
+      "terms": "服务条款",
+      "contact": "联系我们",
+      "documentation": "文档"
+    }
+  }
+}

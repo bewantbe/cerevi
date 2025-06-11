@@ -1,0 +1,186 @@
+{
+  "app": {
+    "title": "VISoR Platform",
+    "subtitle": "Volumetric Imaging with Synchronized on-the-fly-scan and Readout",
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "close": "Close"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "specimens": "Specimens",
+    "viewer": "Viewer",
+    "documentation": "Documentation",
+    "language": "Language"
+  },
+  "home": {
+    "hero": {
+      "title": "VISoR Platform",
+      "subtitle": "High-throughput, high-quality brain mapping",
+      "description": "Volumetric Imaging with Synchronized on-the-fly-scan and Readout (VISoR) for brain mapping from mouse to human at micrometer resolution.",
+      "getStarted": "Get Started",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "title": "Key Features",
+      "multiResolution": {
+        "title": "Multi-resolution Imaging",
+        "description": "8 pyramid levels from 64³ to 7296×6016×7040 voxels"
+      },
+      "multiChannel": {
+        "title": "Multi-channel Fluorescence",
+        "description": "4 wavelength channels: 405nm, 488nm, 561nm, 640nm"
+      },
+      "brainAtlas": {
+        "title": "Brain Atlas Integration",
+        "description": "241 brain regions with hierarchical organization"
+      },
+      "3dVisualization": {
+        "title": "3D Visualization",
+        "description": "Interactive 3D brain shell rendering with coordinate mapping"
+      }
+    },
+    "specimens": {
+      "title": "Demo Specimens",
+      "description": "Explore high-resolution brain imaging datasets",
+      "mouseBrain": "Mouse Brain",
+      "mouseBody": "Mouse Whole Body",
+      "macaqueBrain": "Macaque Brain",
+      "humanBrain": "Human Brain",
+      "viewDetails": "View Details",
+      "openViewer": "Open Viewer"
+    }
+  },
+  "viewer": {
+    "title": "Atlas Viewer",
+    "loading": "Loading specimen data...",
+    "views": {
+      "grid": "Grid View",
+      "sagittal": "Sagittal",
+      "coronal": "Coronal",
+      "horizontal": "Horizontal",
+      "3d": "3D View"
+    },
+    "controls": {
+      "zoom": "Zoom",
+      "pan": "Pan",
+      "slice": "Slice",
+      "reset": "Reset View",
+      "maximize": "Maximize",
+      "minimize": "Return to Grid",
+      "sync": "Synchronize Views",
+      "crosshair": "Show Crosshair"
+    },
+    "status": {
+      "coordinates": "Coordinates",
+      "position": "Position",
+      "zoom": "Zoom",
+      "level": "Level",
+      "slice": "Slice",
+      "region": "Region",
+      "channel": "Channel"
+    },
+    "keyboard": {
+      "title": "Keyboard Shortcuts",
+      "arrows": "Arrow keys: Navigate slices",
+      "plus": "+/-: Zoom in/out",
+      "zero": "0: Reset zoom",
+      "numbers": "1/2/3/4: Maximize views",
+      "escape": "Esc/G: Return to grid"
+    }
+  },
+  "controls": {
+    "metadata": {
+      "title": "Metadata",
+      "specimen": "Specimen",
+      "species": "Species",
+      "description": "Description",
+      "dimensions": "Dimensions",
+      "resolution": "Resolution",
+      "channels": "Channels",
+      "fileSize": "File Size",
+      "dataType": "Data Type",
+      "coordinateSystem": "Coordinate System"
+    },
+    "channels": {
+      "title": "Channels",
+      "channel": "Channel",
+      "wavelength": "Wavelength",
+      "enabled": "Enabled",
+      "brightness": "Brightness",
+      "contrast": "Contrast",
+      "gamma": "Gamma",
+      "blendMode": "Blend Mode",
+      "resetAll": "Reset All"
+    },
+    "atlas": {
+      "title": "Atlas",
+      "enabled": "Show Atlas",
+      "opacity": "Opacity",
+      "colorMode": "Color Mode",
+      "showLabels": "Show Labels",
+      "labelSize": "Label Size",
+      "showBorders": "Show Borders",
+      "borderWidth": "Border Width"
+    },
+    "regions": {
+      "title": "Brain Regions",
+      "search": "Search regions...",
+      "total": "Total regions",
+      "selected": "Selected",
+      "highlighted": "Highlighted",
+      "showAll": "Show All",
+      "hideAll": "Hide All",
+      "expandAll": "Expand All",
+      "collapseAll": "Collapse All",
+      "level": "Level",
+      "hierarchy": "Hierarchy"
+    }
+  },
+  "regions": {
+    "pick": "Click to pick region",
+    "picked": "Region picked",
+    "noRegion": "No region found",
+    "abbreviation": "Abbr",
+    "volume": "Volume",
+    "centroid": "Centroid",
+    "boundingBox": "Bounding Box",
+    "statistics": "Statistics"
+  },
+  "errors": {
+    "networkError": "Network connection error",
+    "dataError": "Data loading error",
+    "renderingError": "Rendering error",
+    "unknownError": "Unknown error occurred",
+    "retryAction": "Please try again",
+    "contactSupport": "Contact support if the problem persists"
+  },
+  "units": {
+    "pixels": "pixels",
+    "microns": "μm",
+    "millimeters": "mm",
+    "bytes": "bytes",
+    "kilobytes": "KB",
+    "megabytes": "MB",
+    "gigabytes": "GB",
+    "voxels": "voxels"
+  },
+  "about": {
+    "title": "About VISoR Platform",
+    "description": "The VISoR Platform is a comprehensive web-based solution for exploring high-resolution brain imaging datasets. Built with modern web technologies, it provides researchers with intuitive tools for navigating multi-scale neuroimaging data.",
+    "technology": "Technology Stack",
+    "features": "Platform Features",
+    "contact": "Contact Information"
+  },
+  "footer": {
+    "copyright": "© 2024 VISoR Platform. All rights reserved.",
+    "links": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "contact": "Contact Us",
+      "documentation": "Documentation"
+    }
+  }
+}
