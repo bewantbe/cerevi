@@ -219,7 +219,7 @@ import {
   Download
 } from '@element-plus/icons-vue'
 import { useVISoRStore } from '@/stores/visor'
-import type { Region } from '@/services/api'
+import type { Region } from '@/types'
 
 interface Props {
   specimenId: string
@@ -355,13 +355,13 @@ const onRegionClick = (data: any) => {
   }
 }
 
-const highlightRegion = (region: Region) => {
+const highlightRegion = (region: any) => {
   // TODO: Implement region highlighting in viewers
   console.log('Highlighting region:', region.name)
   ElMessage.success(`Highlighting ${region.name}`)
 }
 
-const goToRegion = async (region: Region) => {
+const goToRegion = async (region: any) => {
   try {
     // Use the region picking API to find region center
     const result = await visorStore.pickRegionAtCoordinate(0, 0, 0)

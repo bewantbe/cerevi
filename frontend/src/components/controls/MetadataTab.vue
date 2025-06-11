@@ -52,9 +52,9 @@
           </div>
           <div class="info-item">
             <span class="label">File Size:</span>
-            <span class="value">{{ formatFileSize(imageInfo.file_size) }}</span>
+            <span class="value">{{ formatFileSize(imageInfo.file_size_bytes) }}</span>
           </div>
-          <div class="info-item">
+          <div class="info-item" v-if="imageInfo.tile_size">
             <span class="label">Tile Size:</span>
             <span class="value">{{ imageInfo.tile_size }}×{{ imageInfo.tile_size }}</span>
           </div>
@@ -64,7 +64,7 @@
           </div>
           <div class="info-item">
             <span class="label">Levels:</span>
-            <span class="value">{{ imageInfo.resolution_levels.length }} levels</span>
+            <span class="value">{{ imageInfo.resolution_levels }} levels</span>
           </div>
         </div>
       </div>

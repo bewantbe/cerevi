@@ -31,6 +31,10 @@ export interface RegionPickRequest {
   level: number
 }
 
+
+export type ViewType = 'sagittal' | 'coronal' | 'horizontal'
+export type ChannelType = 0 | 1 | 2 | 3
+
 export interface RegionPickResponse {
   region_id: number | null
   region_name: string | null
@@ -39,9 +43,6 @@ export interface RegionPickResponse {
     world: [number, number, number]
   }
 }
-
-export type ViewType = 'sagittal' | 'coronal' | 'horizontal'
-export type ChannelType = 0 | 1 | 2 | 3
 
 export interface ApiError {
   detail: string

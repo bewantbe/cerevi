@@ -11,10 +11,10 @@
         <p v-if="error.details" class="error-details">{{ error.details }}</p>
         <div class="error-actions">
           <el-button type="primary" @click="retry" :loading="retrying">
-            {{ $t('app.retry') }}
+            {{ t('app.retry') }}
           </el-button>
           <el-button @click="reset">
-            {{ $t('app.close') }}
+            {{ t('app.close') }}
           </el-button>
         </div>
         <div v-if="showDetails" class="error-stack">
@@ -41,7 +41,10 @@
 import { ref, onErrorCaptured } from 'vue'
 import { ElButton, ElIcon, ElCollapse, ElCollapseItem } from 'element-plus'
 import { Warning } from '@element-plus/icons-vue'
+import { useI18n } from '@/composables/useI18n'
 import type { ViewerError } from '@/types'
+
+const { t } = useI18n()
 
 interface Props {
   fallback?: string
@@ -69,7 +72,7 @@ onErrorCaptured((err: Error) => {
   const viewerError: ViewerError = {
     type: 'unknown',
     message: err.message || props.fallback,
-    details: err.cause?.toString(),
+    details: err.stack,
     timestamp: new Date(),
     recoverable: true
   }

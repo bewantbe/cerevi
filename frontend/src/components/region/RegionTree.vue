@@ -172,12 +172,12 @@ const countRegions = (regions: Region[]): number => {
   }, 0)
 }
 
-const filterNode = (value: string, data: Region) => {
+const filterNode = (value: string, data: any) => {
   if (!value) return true
   const searchValue = value.toLowerCase()
   return (
-    data.name.toLowerCase().includes(searchValue) ||
-    data.abbreviation.toLowerCase().includes(searchValue)
+    data.name?.toLowerCase().includes(searchValue) ||
+    data.abbreviation?.toLowerCase().includes(searchValue)
   )
 }
 
@@ -215,12 +215,12 @@ const goToRegion = (region: Region) => {
 }
 
 const expandAll = () => {
-  // Get all node keys
+  // Get all node keys recursively
   const getAllKeys = (regions: Region[]): number[] => {
     let keys: number[] = []
     for (const region of regions) {
       keys.push(region.id)
-      if (region.children) {
+      if (region.children && region.children.length > 0) {
         keys = keys.concat(getAllKeys(region.children))
       }
     }
@@ -228,17 +228,22 @@ const expandAll = () => {
   }
   
   const allKeys = getAllKeys(props.regions)
+  // Manually expand each node
   allKeys.forEach(key => {
-    treeRef.value?.setExpanded(key, true)
+    const node = treeRef.value?.getNode(key)
+    if (node && !node.expanded) {
+      node.expand()
+    }
   })
 }
 
 const collapseAll = () => {
+  // Get all node keys recursively
   const getAllKeys = (regions: Region[]): number[] => {
     let keys: number[] = []
     for (const region of regions) {
       keys.push(region.id)
-      if (region.children) {
+      if (region.children && region.children.length > 0) {
         keys = keys.concat(getAllKeys(region.children))
       }
     }
@@ -246,8 +251,12 @@ const collapseAll = () => {
   }
   
   const allKeys = getAllKeys(props.regions)
-  allKeys.forEach(key => {
-    treeRef.value?.setExpanded(key, false)
+  // Manually collapse each node (start from children first)
+  allKeys.reverse().forEach(key => {
+    const node = treeRef.value?.getNode(key)
+    if (node && node.expanded) {
+      node.collapse()
+    }
   })
 }
 

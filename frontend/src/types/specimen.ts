@@ -30,6 +30,9 @@ export interface ImageInfo {
   file_size_bytes: number
   pixel_size_um: [number, number, number]
   voxel_count: number
+  // Legacy properties for backward compatibility
+  file_size?: number
+  tile_size?: number
 }
 
 export interface AtlasInfo {
