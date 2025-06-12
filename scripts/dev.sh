@@ -1,7 +1,24 @@
 #!/bin/bash
 
-# Development script for hot reloading frontend
-echo "Starting development environment with hot reloading..."
+# Check for production mode argument
+if [ "$1" = "production" ]; then
+    echo "Starting PRODUCTION environment..."
+    MODE="production"
+    COMPOSE_FILES="-f docker-compose.yml"
+    BUILD_MESSAGE="Building and starting production containers..."
+elif [ "$1" = "" ]; then
+    echo "Starting DEVELOPMENT environment with hot reloading..."
+    MODE="development"
+    COMPOSE_FILES="-f docker-compose.yml -f docker-compose.dev.yml"
+    BUILD_MESSAGE="Building and starting development containers..."
+else
+    echo "Usage: $0 [production]"
+    echo ""
+    echo "Arguments:"
+    echo "  (no argument)  Start development environment with hot reloading"
+    echo "  production     Start production environment with optimized build"
+    exit 1
+fi
 
 # Stop any existing containers (both production and development)
 echo "Stopping existing containers..."
@@ -15,10 +32,10 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
 
 # Clean up any orphaned containers
 echo "Cleaning up orphaned containers..."
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml down --remove-orphans
+docker-compose $COMPOSE_FILES down --remove-orphans
 
-# Start development environment with fresh build
-echo "Building and starting development containers..."
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build --force-recreate
+# Start the appropriate environment with fresh build
+echo "$BUILD_MESSAGE"
+docker-compose $COMPOSE_FILES up --build --force-recreate
 
-echo "Development environment stopped."
+echo "$MODE environment stopped."
