@@ -70,7 +70,8 @@ export const useVISoRStore = defineStore('visor', () => {
   })
 
   const maxLevel = computed(() => {
-    return imageInfo.value?.resolution_levels || 0
+    if (!imageInfo.value?.resolution_levels?.length) return 0
+    return Math.max(...imageInfo.value.resolution_levels)
   })
 
   const viewerState = computed((): ViewerState => ({
@@ -194,7 +195,7 @@ export const useVISoRStore = defineStore('visor', () => {
   }
 
   function setCurrentLevel(level: number) {
-    if (imageInfo.value && level >= 0 && level < imageInfo.value.resolution_levels) {
+    if (imageInfo.value && level >= 0 && level <= maxLevel.value) {
       currentLevel.value = level
     }
   }
