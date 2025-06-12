@@ -185,6 +185,7 @@
       </div>
     </section>
   </div>
+  <Footer />
 </template>
 
 <script setup lang="ts">
@@ -236,6 +237,7 @@ onMounted(() => {
     visorStore.loadSpecimens()
   }
 })
+import Footer from '@/components/layout/Footer.vue'
 </script>
 
 <style scoped>
