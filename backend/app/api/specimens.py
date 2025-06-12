@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
 
 from ..models.specimen import SpecimenMetadata
-from ..config import get_specimen_config, get_all_specimens
+from ..config import get_specimen_config, get_all_specimens, settings
 
 router = APIRouter()
 
@@ -37,8 +37,18 @@ async def get_specimen(specimen_id: str):
 async def get_specimen_config_endpoint(specimen_id: str):
     """Get configuration for a specific specimen"""
     specimen_config = get_specimen_config(specimen_id)
-    
+
     if not specimen_config:
         raise HTTPException(status_code=404, detail=f"Specimen {specimen_id} not found")
-    
+
     return specimen_config
+
+@router.get("/specimens/{specimen_id}/model")
+async def get_specimen_model(specimen_id: str):
+    """Get 3D model file for a specific specimen"""
+    model_path = settings.get_model_path(specimen_id)
+
+    if not model_path.exists():
+        raise HTTPException(status_code=404, detail=f"Model file for specimen {specimen_id} not found")
+
+    return JSONResponse(content={"model_path": str(model_path)})

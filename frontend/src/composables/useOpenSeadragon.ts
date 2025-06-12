@@ -19,16 +19,18 @@ export function useOpenSeadragon(containerRef: Ref<HTMLElement | undefined>) {
   const viewerStore = useVISoRStore()
 
   const createTileSource = (options: OpenSeadragonOptions) => {
-    const { specimenId, view, channel = 0 } = options
+    const { specimenId, view, channel = Object.keys(viewerStore.imageInfo?.channels || {})[0] || 0 } = options
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
     
     return {
-      height: 7296, // Will be dynamically loaded from metadata
-      width: 6016,
-      tileSize: 512,
+      height: viewerStore.imageInfo?.dimensions[1] || 1, // Minimum default value indicating invalid state
+      width: viewerStore.imageInfo?.dimensions[2] || 1,
+      tileSize: viewerStore.imageInfo?.tile_size || 512,
       overlap: 0,
       minLevel: 0,
-      maxLevel: 7,
+      maxLevel: viewerStore.imageInfo?.resolution_levels?.length 
+        ? viewerStore.imageInfo.resolution_levels.length - 1 
+        : 0,
       getTileUrl: function(level: number, x: number, y: number) {
         const z = coordinates.value.z
         return `${baseUrl}/api/specimens/${specimenId}/image/${view}/${level}/${z}/${x}/${y}?channel=${channel}`

@@ -24,8 +24,8 @@ export interface SpecimenMetadata {
 
 export interface ImageInfo {
   dimensions: [number, number, number] // [z, y, x]
-  resolution_levels: number
-  channels: number
+  resolution_levels: number[]
+  channels: Record<string, string>
   data_type: string
   file_size_bytes: number
   pixel_size_um: [number, number, number]
