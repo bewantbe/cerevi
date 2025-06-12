@@ -4,7 +4,10 @@
     <main class="main-content">
       <router-view />
     </main>
-    <Footer />
+    <router-view v-slot="{ Component }">
+      <component :is="Component" />
+      <Footer v-if="$route.name === 'home'" />
+    </router-view>
   </div>
 </template>
 
@@ -33,7 +36,7 @@ onMounted(() => {
 
 .main-content {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* Reset some default styles */
@@ -44,8 +47,8 @@ onMounted(() => {
 body {
   margin: 0;
   padding: 0;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-y: auto;
 }
 
 html {
