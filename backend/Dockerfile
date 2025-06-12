@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     g++ \
     libhdf5-dev \
     pkg-config \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set work directory
