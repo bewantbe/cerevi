@@ -23,7 +23,8 @@ services:
     volumes:
       - ./backend:/app
       - ./data:/app/data:ro
-    depends_on:
+      - /share/data:/share/data:ro
+      - /home/xyy/SIAT_CAS/xu/tracing/swc_collect:/home/xyy/SIAT_CAS/xu/tracing/swc_collect:ro
       - redis
 
   redis:
