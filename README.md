@@ -20,6 +20,7 @@ A modern web application for high-throughput, high-quality brain mapping visuali
 
 ## Quick Start
 
+### Full Platform (Docker - Recommended)
 ```bash
 # Clone and setup
 git clone <repository>
@@ -28,54 +29,65 @@ cd cerevi
 # Setup data links (first time only)
 ./scripts/setup_data_links.sh
 
-# Start backend services (Docker)
-./scripts/docker_test.sh start
+# Start all services
+docker-compose up --build
 
-# Test API endpoints
-curl http://localhost:8000/health
-curl http://localhost:8000/api/specimens
+# Access the application
+open http://localhost:3000    # Frontend
+open http://localhost:8000    # Backend API
+```
+
+### Development Mode
+```bash
+# Frontend development (with hot reload)
+./scripts/dev.sh
+
+# Backend development (local)
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
 
 # View API documentation
 open http://localhost:8000/docs
 ```
 
-## ✅ Backend Status: PRODUCTION READY!
+## Status
 
-The VISoR Platform backend is **fully functional** with:
+### ✅ Backend: Production Ready
+- Complete API implementation with all endpoints working
+- Docker containerization with health monitoring
+- 275GB multi-resolution image processing pipeline
+- 241 brain regions with hierarchical structure
+- Redis caching and performance optimization
 
-- ✅ **Complete API Implementation**: All endpoints working
-- ✅ **Docker Containerization**: Production-ready containers
-- ✅ **Data Processing**: 275GB multi-resolution image pipeline
-- ✅ **Brain Region Analysis**: 241 regions with hierarchical structure
-- ✅ **Multi-view Support**: Sagittal, coronal, horizontal projections
-- ✅ **Performance Optimization**: Redis caching and health monitoring
+### 🚧 Frontend: In Development
+- Vue.js 3 application with TypeScript
+- OpenSeadragon integration for image viewing
+- Three.js for 3D brain visualization
+- Multi-language support (English/Chinese)
 
-**Test Results**: See [DOCKER_TEST_RESULTS.md](DOCKER_TEST_RESULTS.md) for complete validation.
+## Documentation
 
-## Development
-
-```bash
-# Frontend development
-cd frontend
-npm install
-npm run dev
-
-# Backend development  
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-
-# Convert region data
-python scripts/convert_regions.py
-```
+- **[Backend Development Guide](BACKEND_DEVELOPMENT.md)** - Complete backend development instructions
+- **[Frontend Development Guide](DEVELOPMENT.md)** - Frontend and full-stack development
+- **[API Documentation](http://localhost:8000/docs)** - Interactive API documentation (when running)
 
 ## Data Structure
 
-- Images: Multi-resolution 3D arrays in .ims format
-- Atlas: Region masks with hierarchical structure
-- Models: 3D brain shell models in .obj format
-- Metadata: Image dimensions, channels, coordinate systems
+- **Images**: Multi-resolution 3D arrays in HDF5 (.ims) format
+- **Atlas**: Brain region masks with hierarchical structure
+- **Models**: 3D brain shell models in .obj format
+- **Metadata**: Image dimensions, channels, coordinate systems
 
-## API Documentation
+## Testing
 
-Once running, visit http://localhost:8000/docs for interactive API documentation.
+```bash
+# Test backend
+./scripts/docker_test.sh start && ./scripts/docker_test.sh test
+
+# Test frontend
+cd frontend && npm test
+
+# Full platform test
+./scripts/test_platform.sh
+```

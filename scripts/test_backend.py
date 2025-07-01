@@ -1,10 +1,38 @@
 #!/usr/bin/env python3
 """
 Test script for VISoR Platform backend
+
+DEPRECATED: This script has been moved to backend/tests/
+Please use the new test structure:
+- backend/tests/test_integration.py - Integration tests (converted from this script)
+- backend/tests/test_api_endpoints.py - API endpoint tests (placeholders)
+- backend/tests/run_tests.py - Simple test runner
+
+To run tests:
+- cd backend/tests && python run_tests.py
+- Or with pytest: cd backend && pytest tests/
 """
 
 import sys
 import os
+
+print("""==================================================================
+⚠️  DEPRECATION NOTICE
+==================================================================
+This test script has been moved to backend/tests/ for better organization.
+Please use the new test structure:
+
+    New location: backend/tests/test_integration.py
+    Test runner:  backend/tests/run_tests.py
+
+To run tests:
+    cd backend/tests && python run_tests.py
+    Or with pytest: cd backend && pytest tests/
+
+Running original tests for backward compatibility...
+==================================================================
+""")
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
 def test_imports():
