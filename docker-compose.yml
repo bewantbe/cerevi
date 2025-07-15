@@ -18,13 +18,15 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=${REDIS_URL}
       - DATA_PATH=/app/data
+      - DEBUG=${DEBUG}
     volumes:
       - ./backend:/app
       - ./data:/app/data:ro
       - /share/data:/share/data:ro
       - /home/xyy/SIAT_CAS/xu/tracing/swc_collect:/home/xyy/SIAT_CAS/xu/tracing/swc_collect:ro
+    depends_on:
       - redis
 
   redis:

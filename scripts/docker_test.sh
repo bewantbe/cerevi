@@ -8,6 +8,11 @@ BACKEND_CONTAINER="visor-backend-test"
 REDIS_CONTAINER="redis-test"
 BACKEND_IMAGE="visor-backend"
 
+# Load environment variables from .env file
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -73,6 +78,7 @@ start_containers() {
                 --link "$REDIS_CONTAINER":redis \
                 -e REDIS_URL=redis://redis:6379 \
                 -e DATA_PATH=/app/data \
+                -e DEBUG="${DEBUG:-false}" \
                 -v "$(pwd)/data:/app/data:ro" \
                 -p 8000:8000 \
                 "$BACKEND_IMAGE"
