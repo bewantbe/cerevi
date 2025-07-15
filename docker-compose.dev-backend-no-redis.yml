@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  backend:
+    environment:
+      - REDIS_URL=  # Disable Redis
+      - DEBUG=true
+    depends_on: []  # Remove Redis dependency

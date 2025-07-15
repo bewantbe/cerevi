@@ -9,7 +9,7 @@ if [ "$1" = "production" ]; then
 elif [ "$1" = "" ]; then
     echo "Starting DEVELOPMENT environment with hot reloading..."
     MODE="development"
-    COMPOSE_FILES="-f docker-compose.yml -f docker-compose.dev.yml"
+    COMPOSE_FILES="-f docker-compose.yml -f docker-compose.dev-frontend.yml"
     BUILD_MESSAGE="Building and starting development containers..."
 else
     echo "Usage: $0 [production]"
@@ -23,7 +23,7 @@ fi
 # Stop any existing containers (both production and development)
 echo "Stopping existing containers..."
 docker-compose down
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
+docker-compose -f docker-compose.yml -f docker-compose.dev-frontend.yml down
 
 # Remove existing images to ensure clean build (optional - uncomment if needed)
 # echo "Removing existing frontend images..."

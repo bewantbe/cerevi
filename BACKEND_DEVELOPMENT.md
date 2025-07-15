@@ -37,6 +37,22 @@ curl http://localhost:8000/api/specimens
 ./scripts/docker_test.sh stop
 ```
 
+### Option 3: Backend Development without Redis
+```bash
+# For backend development when Redis is not needed or available
+docker-compose -f docker-compose.yml -f docker-compose.dev-backend-no-redis.yml up backend frontend
+
+# This configuration:
+# ✅ Disables Redis dependency for backend
+# ✅ Enables debug mode  
+# ✅ Useful for testing without cache layer
+# ✅ Simplifies development setup
+
+# Test the API (Redis-related features will be disabled)
+curl http://localhost:8000/health
+curl http://localhost:8000/api/specimens
+```
+
 ## 📋 Prerequisites
 
 ### System Requirements

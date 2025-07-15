@@ -107,6 +107,17 @@ frontend/
 # ✅ Mounts source code for live updates
 ```
 
+**Backend Development without Redis:**
+```bash
+# For backend development when Redis is not needed or available
+docker-compose -f docker-compose.yml -f docker-compose.dev-backend-no-redis.yml up backend frontend
+
+# This configuration:
+# ✅ Disables Redis dependency for backend
+# ✅ Enables debug mode
+# ✅ Useful for testing without cache layer
+```
+
 **Access Points:**
 - **Frontend (Hot Reload)**: http://localhost:3001
 - **Backend API**: http://localhost:8000
@@ -295,7 +306,7 @@ frontend:
 ./scripts/dev.sh
 
 # Manual development startup
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+docker-compose -f docker-compose.yml -f docker-compose.dev-frontend.yml up --build
 
 # View frontend logs
 docker-compose logs frontend
