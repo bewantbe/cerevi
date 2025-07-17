@@ -1,10 +1,19 @@
 # improve documentation
 
-make the backend_development.md more concise. reduce context like ...
+# README.md
+
+* revise it, done
+
+# BACKEND_DEVELOPMENT.md
+
+* make the backend_development.md more concise. reduce context like ...
+* make descriptioin of API more complete.
 
 # test backend
 
 ## test functionality
+
+* Finish it.
 
 ## benchmark performance
 

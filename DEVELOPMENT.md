@@ -9,7 +9,7 @@ A comprehensive guide for frontend and full-stack development of the VISoR Platf
 ### Frontend Development (Hot Reload)
 ```bash
 # Start development environment with hot reloading
-./scripts/dev.sh
+./scripts/start_services.sh
 
 # Access the application
 open http://localhost:3001  # Frontend with hot reload
@@ -98,7 +98,7 @@ frontend/
 **Hot Reloading with Docker:**
 ```bash
 # Start development environment
-./scripts/dev.sh
+./scripts/start_services.sh
 
 # What this does:
 # ✅ Stops existing containers
@@ -303,7 +303,7 @@ frontend:
 **Development Commands:**
 ```bash
 # Start development environment
-./scripts/dev.sh
+./scripts/start_services.sh
 
 # Manual development startup
 docker-compose -f docker-compose.yml -f docker-compose.dev-frontend.yml up --build
@@ -486,7 +486,7 @@ open http://localhost:3001  # Not 3000!
 
 # Restart development environment
 docker-compose down
-./scripts/dev.sh
+./scripts/start_services.sh
 ```
 
 **2. TypeScript Errors**

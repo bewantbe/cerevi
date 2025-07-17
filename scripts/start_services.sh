@@ -6,11 +6,13 @@ if [ "$1" = "production" ]; then
     MODE="production"
     COMPOSE_FILES="-f docker-compose.yml"
     BUILD_MESSAGE="Building and starting production containers..."
+    export DEBUG=false
 elif [ "$1" = "" ]; then
     echo "Starting DEVELOPMENT environment with hot reloading..."
     MODE="development"
     COMPOSE_FILES="-f docker-compose.yml -f docker-compose.dev-frontend.yml"
     BUILD_MESSAGE="Building and starting development containers..."
+    export DEBUG=true
 else
     echo "Usage: $0 [production]"
     echo ""

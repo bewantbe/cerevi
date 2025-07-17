@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# VISoR Platform Docker Test Management Script
+# For testing of backend container.
+
+# Use docker-compose (or start_services.sh) for starting containers in usual case,
+# see also BACKEND_DEVELOPMENT.md
 
 set -e
 
