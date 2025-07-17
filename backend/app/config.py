@@ -5,7 +5,7 @@ Configuration settings for the VISoR Platform backend
 import os
 from pathlib import Path
 from typing import Dict, List, Optional
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 
@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     }
     
     # 3D model settings
-    model_scale_factor: float = 10.0  # Model units are in 10um
+    mesh_scale_factor: float = 10.0  # Mesh units are in 10um
     image_resolution_um: float = 10.0  # Image resolution at level 0
     
     # Performance settings
@@ -77,10 +77,12 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
-        extra = "ignore"  # Ignore extra environment variables
+    # Pydantic v2 configuration
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        extra="ignore"  # Ignore extra environment variables
+    )
         
     def get_specimen_path(self, specimen_id: str) -> Path:
         """Get the path to a specific specimen directory"""

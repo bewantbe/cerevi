@@ -80,7 +80,7 @@ async def get_model_info(
         info = ModelInfo(
             specimen_id=specimen_id,
             file_path=str(model_path),
-            scale_factor=settings.model_scale_factor,
+            scale_factor=settings.mesh_scale_factor,
             vertex_count=0,  # Would need OBJ parser
             face_count=0,    # Would need OBJ parser
             file_size=file_size
@@ -138,7 +138,7 @@ async def get_complete_metadata(
                     metadata["model"] = {
                         "specimen_id": specimen_id,
                         "file_path": str(model_path),
-                        "scale_factor": settings.model_scale_factor,
+                        "scale_factor": settings.mesh_scale_factor,
                         "file_size": file_size
                     }
             except Exception as e:

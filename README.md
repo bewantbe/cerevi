@@ -155,7 +155,7 @@ These settings can be configured in `backend/app/config.py`:
 - **Supported Views**: Sagittal, coronal, horizontal (defined in view types)
 - **Channel Mapping**: Configurable wavelength assignments (`default_channels`)
 - **Resolution Levels**: Maximum pyramid levels (`max_resolution_level`)
-- **Model Scale**: 3D model units in micrometers (`model_scale_factor`)
+- **Model Scale**: 3D model units in micrometers (`mesh_scale_factor`)
 - **Cache Settings**: TTL for tiles, metadata, and regions (`cache_ttl_*`)
 
 ## Testing
