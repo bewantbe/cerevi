@@ -1,23 +1,25 @@
-# improve documentation
+# Roadmap for Cerevi Development
 
-# README.md
+## Completed Tasks
 
-* revise it, done
+* Revise README.md. - done
+* Finish backend/tests, mostly done.
 
-# BACKEND_DEVELOPMENT.md
+## TODO
 
-* make the backend_development.md more concise. reduce context like ...
-* make descriptioin of API more complete.
+* add API tests for images.
+* improve doc of BACKEND_DEVELOPMENT.md
+  - make the backend_development.md more concise
+  - make descriptioin of API more complete.
 
-# test backend
+## possible future tasks
 
-## test functionality
+* improve documentation
+* test backend
+* test functionality
+* benchmark performance
 
-* Finish it.
-
-## benchmark performance
-
-## restructure directory structure
+### restructure directory structure
 
 Analysis the backend code and restructure the data directory.
 
