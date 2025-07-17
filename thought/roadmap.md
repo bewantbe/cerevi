@@ -4,13 +4,14 @@
 
 * Revise README.md. - done
 * Finish backend/tests, mostly done.
+* add API tests for images - done.
+* add API tests for atlas - done.
 
 ## TODO
 
-* add API tests for images.
 * improve doc of BACKEND_DEVELOPMENT.md
-  - make the backend_development.md more concise
   - make descriptioin of API more complete.
+  - make the backend_development.md more concise
 
 ## possible future tasks
 

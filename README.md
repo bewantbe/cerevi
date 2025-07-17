@@ -166,7 +166,7 @@ These settings can be configured in `backend/app/config.py`:
 
 # test backend functionality in docker
 docker-compose up -d --force-recreate backend
-docker exec cerevi_backend_1 python -m pytest tests/ -v
+docker exec cerevi_backend_1 python -m pytest tests/ -v -rs
 
 # Test frontend
 docker-compose up -d --force-recreate frontend

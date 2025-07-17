@@ -110,10 +110,10 @@ class TestSpecimenEndpoints:
             assert "model_path" in data
             assert isinstance(data["model_path"], str)
         elif response.status_code == 404:
-            # Model file not found is acceptable in test environment
+            # Model file not found - this is a warning in test environment
             data = response.json()
             assert "detail" in data
-            assert "not found" in data["detail"].lower()
+            pytest.skip(f"Model file not found for specimen {specimen_id}: {data['detail']}")
         else:
             pytest.fail(f"Unexpected status code: {response.status_code}")
     
@@ -167,9 +167,10 @@ class TestMetadataEndpoints:
             assert "data_type" in data
             assert "file_size" in data
         elif response.status_code == 404:
-            # Image file not found is acceptable in test environment
+            # Image file not found - this is a warning in test environment
             data = response.json()
             assert "detail" in data
+            pytest.skip(f"Image file not found for specimen {specimen_id}: {data['detail']}")
         else:
             pytest.fail(f"Unexpected status code: {response.status_code}")
     
@@ -191,9 +192,10 @@ class TestMetadataEndpoints:
             assert "file_size" in data
             assert "total_regions" in data
         elif response.status_code == 404:
-            # Atlas file not found is acceptable in test environment
+            # Atlas file not found - this is a warning in test environment
             data = response.json()
             assert "detail" in data
+            pytest.skip(f"Atlas file not found for specimen {specimen_id}: {data['detail']}")
         else:
             pytest.fail(f"Unexpected status code: {response.status_code}")
     
@@ -213,9 +215,10 @@ class TestMetadataEndpoints:
             assert "face_count" in data
             assert "file_size" in data
         elif response.status_code == 404:
-            # Model file not found is acceptable in test environment
+            # Model file not found - this is a warning in test environment
             data = response.json()
             assert "detail" in data
+            pytest.skip(f"Model file not found for specimen {specimen_id}: {data['detail']}")
         else:
             pytest.fail(f"Unexpected status code: {response.status_code}")
     
@@ -266,46 +269,489 @@ class TestImageEndpoints:
     
     def test_get_image_tile(self, client):
         """Test GET /api/specimens/{id}/image/{view}/{level}/{z}/{x}/{y}"""
-        # TODO: Implement test
-        pytest.skip("API endpoint test not yet implemented")
+        specimen_id = "macaque_brain_rm009"
+        view = "sagittal"
+        level = 0
+        z, x, y = 0, 0, 0
         
-        # specimen_id = "macaque_brain_rm009"
-        # view = "sagittal"
-        # level = 0
-        # z, x, y = 0, 0, 0
-        # response = client.get(f"/api/specimens/{specimen_id}/image/{view}/{level}/{z}/{x}/{y}")
-        # assert response.status_code == 200
-        # assert response.headers["content-type"].startswith("image/")
+        response = client.get(f"/api/specimens/{specimen_id}/image/{view}/{level}/{z}/{x}/{y}")
+        
+        # Check if image file exists - if not, should return 404
+        if response.status_code == 200:
+            # Verify response headers
+            assert response.headers["content-type"] == "image/jpeg"
+            assert "Cache-Control" in response.headers
+            assert "public" in response.headers["Cache-Control"]
+            assert "max-age" in response.headers["Cache-Control"]
+            assert "X-Tile-Info" in response.headers
+            
+            # Verify response content
+            assert len(response.content) > 0
+            # Check for JPEG magic bytes (FF D8)
+            assert response.content[:2] == b'\xff\xd8'
+            
+        elif response.status_code == 404:
+            # Image file not found - this is a warning in test environment
+            data = response.json()
+            assert "detail" in data
+            pytest.skip(f"Image file not found for specimen {specimen_id}: {data['detail']}")
+        else:
+            pytest.fail(f"Unexpected status code: {response.status_code}")
+    
+    def test_get_image_tile_with_parameters(self, client):
+        """Test image tile with various parameters"""
+        specimen_id = "macaque_brain_rm009"
+        
+        # Test different views
+        for view in ["sagittal", "coronal", "horizontal"]:
+            response = client.get(f"/api/specimens/{specimen_id}/image/{view}/0/0/0/0")
+            assert response.status_code in [200, 404]  # 404 acceptable if file missing
+            
+            if response.status_code == 200:
+                assert response.headers["content-type"] == "image/jpeg"
+        
+        # Test with channel parameter
+        response = client.get(f"/api/specimens/{specimen_id}/image/sagittal/0/0/0/0?channel=1")
+        assert response.status_code in [200, 404]
+        
+        # Test with tile_size parameter
+        response = client.get(f"/api/specimens/{specimen_id}/image/sagittal/0/0/0/0?tile_size=256")
+        assert response.status_code in [200, 404]
+    
+    def test_get_image_tile_invalid_specimen(self, client):
+        """Test image tile with invalid specimen ID"""
+        response = client.get("/api/specimens/invalid_specimen_id/image/sagittal/0/0/0/0")
+        assert response.status_code == 404
+        
+        data = response.json()
+        assert "detail" in data
+        assert "not found" in data["detail"].lower()
+    
+    def test_get_image_tile_invalid_parameters(self, client):
+        """Test image tile with invalid parameters"""
+        specimen_id = "macaque_brain_rm009"
+        
+        # Test invalid view
+        response = client.get(f"/api/specimens/{specimen_id}/image/invalid_view/0/0/0/0")
+        assert response.status_code == 422  # Validation error
+        
+        # Test invalid level (negative)
+        response = client.get(f"/api/specimens/{specimen_id}/image/sagittal/-1/0/0/0")
+        assert response.status_code == 422
+        
+        # Test invalid level (too high)
+        response = client.get(f"/api/specimens/{specimen_id}/image/sagittal/10/0/0/0")
+        assert response.status_code == 422
+        
+        # Test invalid coordinates (negative)
+        response = client.get(f"/api/specimens/{specimen_id}/image/sagittal/0/0/-1/0")
+        assert response.status_code == 422
+        
+        response = client.get(f"/api/specimens/{specimen_id}/image/sagittal/0/0/0/-1")
+        assert response.status_code == 422
     
     def test_get_atlas_tile(self, client):
         """Test GET /api/specimens/{id}/atlas/{view}/{level}/{z}/{x}/{y}"""
-        # TODO: Implement test
-        pytest.skip("API endpoint test not yet implemented")
+        specimen_id = "macaque_brain_rm009"
+        view = "sagittal"
+        level = 0
+        z, x, y = 0, 0, 0
+        
+        response = client.get(f"/api/specimens/{specimen_id}/atlas/{view}/{level}/{z}/{x}/{y}")
+        
+        # Check if atlas file exists - if not, should return 404
+        if response.status_code == 200:
+            # Verify response headers
+            assert response.headers["content-type"] == "image/png"
+            assert "Cache-Control" in response.headers
+            assert "public" in response.headers["Cache-Control"]
+            assert "max-age" in response.headers["Cache-Control"]
+            assert "X-Atlas-Info" in response.headers
+            
+            # Verify response content
+            assert len(response.content) > 0
+            # Check for PNG magic bytes (89 50 4E 47 0D 0A 1A 0A)
+            assert response.content[:8] == b'\x89PNG\r\n\x1a\n'
+            
+        elif response.status_code == 404:
+            # Atlas file not found is acceptable in test environment
+            data = response.json()
+            assert "detail" in data
+        else:
+            pytest.fail(f"Unexpected status code: {response.status_code}")
+    
+    def test_get_atlas_tile_with_parameters(self, client):
+        """Test atlas tile with various parameters"""
+        specimen_id = "macaque_brain_rm009"
+        
+        # Test different views
+        for view in ["sagittal", "coronal", "horizontal"]:
+            response = client.get(f"/api/specimens/{specimen_id}/atlas/{view}/0/0/0/0")
+            assert response.status_code in [200, 404]  # 404 acceptable if file missing
+            
+            if response.status_code == 200:
+                assert response.headers["content-type"] == "image/png"
+        
+        # Test with tile_size parameter
+        response = client.get(f"/api/specimens/{specimen_id}/atlas/sagittal/0/0/0/0?tile_size=256")
+        assert response.status_code in [200, 404]
+    
+    def test_get_atlas_tile_invalid_specimen(self, client):
+        """Test atlas tile with invalid specimen ID"""
+        response = client.get("/api/specimens/invalid_specimen_id/atlas/sagittal/0/0/0/0")
+        assert response.status_code == 404
+        
+        data = response.json()
+        assert "detail" in data
+        assert "not found" in data["detail"].lower()
+    
+    def test_get_atlas_tile_invalid_parameters(self, client):
+        """Test atlas tile with invalid parameters"""
+        specimen_id = "macaque_brain_rm009"
+        
+        # Test invalid view
+        response = client.get(f"/api/specimens/{specimen_id}/atlas/invalid_view/0/0/0/0")
+        assert response.status_code == 422  # Validation error
+        
+        # Test invalid level (negative)
+        response = client.get(f"/api/specimens/{specimen_id}/atlas/sagittal/-1/0/0/0")
+        assert response.status_code == 422
+        
+        # Test invalid level (too high)
+        response = client.get(f"/api/specimens/{specimen_id}/atlas/sagittal/10/0/0/0")
+        assert response.status_code == 422
+    
+    def test_get_tile_grid_info(self, client):
+        """Test GET /api/specimens/{id}/tile-grid/{view}/{level}"""
+        specimen_id = "macaque_brain_rm009"
+        view = "sagittal"
+        level = 0
+        
+        response = client.get(f"/api/specimens/{specimen_id}/tile-grid/{view}/{level}")
+        
+        # Check if image file exists - if not, should return 404
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Verify response structure
+            assert "view" in data
+            assert "level" in data
+            assert "tile_size" in data
+            assert "tiles_x" in data
+            assert "tiles_y" in data
+            assert "image_shape" in data
+            assert "total_tiles" in data
+            
+            # Verify data types and values
+            assert data["view"] == view
+            assert data["level"] == level
+            assert isinstance(data["tile_size"], int)
+            assert isinstance(data["tiles_x"], int)
+            assert isinstance(data["tiles_y"], int)
+            assert isinstance(data["image_shape"], (list, tuple))
+            assert isinstance(data["total_tiles"], int)
+            
+            # Verify reasonable values
+            assert data["tile_size"] > 0
+            assert data["tiles_x"] > 0
+            assert data["tiles_y"] > 0
+            assert data["total_tiles"] == data["tiles_x"] * data["tiles_y"]
+            
+        elif response.status_code == 404:
+            # Image file not found is acceptable in test environment
+            data = response.json()
+            assert "detail" in data
+        else:
+            pytest.fail(f"Unexpected status code: {response.status_code}")
+    
+    def test_get_tile_grid_info_all_views(self, client):
+        """Test tile grid info for all views"""
+        specimen_id = "macaque_brain_rm009"
+        
+        for view in ["sagittal", "coronal", "horizontal"]:
+            response = client.get(f"/api/specimens/{specimen_id}/tile-grid/{view}/0")
+            assert response.status_code in [200, 404]  # 404 acceptable if file missing
+            
+            if response.status_code == 200:
+                data = response.json()
+                assert data["view"] == view
+                assert data["level"] == 0
+    
+    def test_get_tile_grid_info_invalid_specimen(self, client):
+        """Test tile grid info with invalid specimen ID"""
+        response = client.get("/api/specimens/invalid_specimen_id/tile-grid/sagittal/0")
+        assert response.status_code == 404
+        
+        data = response.json()
+        assert "detail" in data
+        assert "not found" in data["detail"].lower()
+    
+    def test_get_tile_grid_info_invalid_parameters(self, client):
+        """Test tile grid info with invalid parameters"""
+        specimen_id = "macaque_brain_rm009"
+        
+        # Test invalid view
+        response = client.get(f"/api/specimens/{specimen_id}/tile-grid/invalid_view/0")
+        assert response.status_code == 422  # Validation error
+        
+        # Test invalid level (negative)
+        response = client.get(f"/api/specimens/{specimen_id}/tile-grid/sagittal/-1")
+        assert response.status_code == 422
+        
+        # Test invalid level (too high)
+        response = client.get(f"/api/specimens/{specimen_id}/tile-grid/sagittal/10")
+        assert response.status_code == 422
 
 class TestRegionEndpoints:
     """Tests for brain region endpoints"""
     
     def test_get_regions(self, client):
         """Test GET /api/specimens/{id}/regions"""
-        # TODO: Implement test
-        pytest.skip("API endpoint test not yet implemented")
+        specimen_id = "macaque_brain_rm009"
+        response = client.get(f"/api/specimens/{specimen_id}/regions")
         
-        # specimen_id = "macaque_brain_rm009"
-        # response = client.get(f"/api/specimens/{specimen_id}/regions")
-        # assert response.status_code == 200
-        # data = response.json()
-        # assert isinstance(data, list)
-        # assert len(data) > 0
+        # Check if regions data is available
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Verify response structure
+            assert "regions" in data
+            assert "total_count" in data
+            assert "filtered_count" in data
+            assert "statistics" in data
+            
+            # Verify regions list
+            regions = data["regions"]
+            assert isinstance(regions, list)
+            assert len(regions) > 0
+            
+            # Verify first region structure
+            region = regions[0]
+            required_fields = ["id", "name", "abbreviation", "level1", "level2", "level3", "level4", "value"]
+            for field in required_fields:
+                assert field in region, f"Required field '{field}' missing from region"
+            
+            # Verify field types
+            assert isinstance(region["id"], int)
+            assert isinstance(region["name"], str)
+            assert isinstance(region["abbreviation"], str)
+            assert isinstance(region["value"], int)
+            assert isinstance(region["level1"], str)
+            assert isinstance(region["level2"], str)
+            assert isinstance(region["level3"], str)
+            assert isinstance(region["level4"], str)
+            
+            # Verify counts
+            assert isinstance(data["total_count"], int)
+            assert isinstance(data["filtered_count"], int)
+            assert data["total_count"] > 0
+            assert data["filtered_count"] > 0
+            
+            # Verify statistics
+            stats = data["statistics"]
+            assert "total_regions" in stats
+            assert "regions_by_level" in stats
+            assert "hierarchy_depth" in stats
+            assert isinstance(stats["total_regions"], int)
+            assert isinstance(stats["regions_by_level"], dict)
+            assert isinstance(stats["hierarchy_depth"], int)
+            
+        elif response.status_code == 500:
+            # Regions file might not be available in test environment
+            data = response.json()
+            assert "detail" in data
+            pytest.skip(f"Regions data not available: {data['detail']}")
+        else:
+            pytest.fail(f"Unexpected status code: {response.status_code}")
+    
+    def test_get_regions_with_filters(self, client):
+        """Test GET /api/specimens/{id}/regions with query parameters"""
+        specimen_id = "macaque_brain_rm009"
+        
+        # Test with level filter
+        response = client.get(f"/api/specimens/{specimen_id}/regions?level=1")
+        if response.status_code == 200:
+            data = response.json()
+            assert "regions" in data
+            assert isinstance(data["regions"], list)
+            
+            # Verify level filtering if regions exist
+            if len(data["regions"]) > 0:
+                # All regions should have distinct level1 values
+                level1_values = [r["level1"] for r in data["regions"]]
+                assert len(set(level1_values)) == len(level1_values), "Level 1 regions should be unique"
+        
+        # Test with search filter
+        response = client.get(f"/api/specimens/{specimen_id}/regions?search=cortex")
+        if response.status_code == 200:
+            data = response.json()
+            assert "regions" in data
+            assert isinstance(data["regions"], list)
+            
+            # Verify search filtering if regions exist
+            if len(data["regions"]) > 0:
+                # At least one region should contain "cortex" in name
+                has_cortex = any("cortex" in r["name"].lower() for r in data["regions"])
+                assert has_cortex, "Search results should contain regions with 'cortex' in name"
+        
+        # Test with max_results filter
+        response = client.get(f"/api/specimens/{specimen_id}/regions?max_results=10")
+        if response.status_code == 200:
+            data = response.json()
+            assert "regions" in data
+            assert len(data["regions"]) <= 10, "Should not return more than max_results"
+    
+    def test_get_regions_invalid_specimen(self, client):
+        """Test GET /api/specimens/{id}/regions with invalid specimen ID"""
+        response = client.get("/api/specimens/invalid_specimen_id/regions")
+        assert response.status_code == 404
+        
+        data = response.json()
+        assert "detail" in data
+        assert "not found" in data["detail"].lower()
     
     def test_pick_region(self, client):
         """Test POST /api/specimens/{id}/pick-region"""
-        # TODO: Implement test
-        pytest.skip("API endpoint test not yet implemented")
+        specimen_id = "macaque_brain_rm009"
+        coordinates = {
+            "view": "sagittal",
+            "x": 100,
+            "y": 100,
+            "z": 100,
+            "level": 0
+        }
         
-        # specimen_id = "macaque_brain_rm009"
-        # coordinates = {"x": 100, "y": 100, "z": 100, "view": "sagittal"}
-        # response = client.post(f"/api/specimens/{specimen_id}/pick-region", json=coordinates)
-        # assert response.status_code == 200
+        response = client.post(f"/api/specimens/{specimen_id}/pick-region", json=coordinates)
+        
+        # Check if region picking is available
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Verify response structure
+            assert "specimen_id" in data
+            assert "coordinate" in data
+            assert "region_value" in data
+            assert "confidence" in data
+            
+            # Verify specimen_id matches
+            assert data["specimen_id"] == specimen_id
+            
+            # Verify coordinate structure
+            coord = data["coordinate"]
+            assert "x" in coord
+            assert "y" in coord
+            assert "z" in coord
+            assert coord["x"] == coordinates["x"]
+            assert coord["y"] == coordinates["y"]
+            assert coord["z"] == coordinates["z"]
+            
+            # Verify data types
+            assert isinstance(data["region_value"], int)
+            assert isinstance(data["confidence"], float)
+            assert 0.0 <= data["confidence"] <= 1.0
+            
+            # If region is found, verify its structure
+            if "region" in data and data["region"] is not None:
+                region = data["region"]
+                required_fields = ["id", "name", "abbreviation", "level1", "level2", "level3", "level4", "value"]
+                for field in required_fields:
+                    assert field in region, f"Required field '{field}' missing from region"
+                assert data["confidence"] == 1.0, "Confidence should be 1.0 when region is found"
+            else:
+                # If no region found, confidence should be 0.0
+                assert data["confidence"] == 0.0, "Confidence should be 0.0 when no region is found"
+                
+        elif response.status_code == 500:
+            # Region picking might not be available in test environment
+            data = response.json()
+            assert "detail" in data
+            pytest.skip(f"Region picking not available: {data['detail']}")
+        else:
+            pytest.fail(f"Unexpected status code: {response.status_code}")
+    
+    def test_pick_region_different_views(self, client):
+        """Test region picking with different view types"""
+        specimen_id = "macaque_brain_rm009"
+        
+        views = ["sagittal", "coronal", "horizontal"]
+        for view in views:
+            coordinates = {
+                "view": view,
+                "x": 50,
+                "y": 50,
+                "z": 50,
+                "level": 0
+            }
+            
+            response = client.post(f"/api/specimens/{specimen_id}/pick-region", json=coordinates)
+            
+            if response.status_code == 200:
+                data = response.json()
+                assert data["specimen_id"] == specimen_id
+                assert data["coordinate"]["x"] == coordinates["x"]
+                assert data["coordinate"]["y"] == coordinates["y"]
+                assert data["coordinate"]["z"] == coordinates["z"]
+            elif response.status_code == 500:
+                # Skip if region picking not available
+                pytest.skip(f"Region picking not available for view {view}")
+            else:
+                pytest.fail(f"Unexpected status code for view {view}: {response.status_code}")
+    
+    def test_pick_region_invalid_specimen(self, client):
+        """Test POST /api/specimens/{id}/pick-region with invalid specimen ID"""
+        coordinates = {
+            "view": "sagittal",
+            "x": 100,
+            "y": 100,
+            "z": 100,
+            "level": 0
+        }
+        
+        response = client.post("/api/specimens/invalid_specimen_id/pick-region", json=coordinates)
+        assert response.status_code == 404
+        
+        data = response.json()
+        assert "detail" in data
+        assert "not found" in data["detail"].lower()
+    
+    def test_pick_region_invalid_coordinates(self, client):
+        """Test region picking with invalid coordinates"""
+        specimen_id = "macaque_brain_rm009"
+        
+        # Test with invalid view
+        invalid_coordinates = {
+            "view": "invalid_view",
+            "x": 100,
+            "y": 100,
+            "z": 100,
+            "level": 0
+        }
+        
+        response = client.post(f"/api/specimens/{specimen_id}/pick-region", json=invalid_coordinates)
+        assert response.status_code == 422  # Validation error
+        
+        # Test with missing required fields
+        incomplete_coordinates = {
+            "view": "sagittal",
+            "x": 100,
+            "y": 100
+            # Missing z and level
+        }
+        
+        response = client.post(f"/api/specimens/{specimen_id}/pick-region", json=incomplete_coordinates)
+        assert response.status_code == 422  # Validation error
+        
+        # Test with negative coordinates
+        negative_coordinates = {
+            "view": "sagittal",
+            "x": -1,
+            "y": 100,
+            "z": 100,
+            "level": 0
+        }
+        
+        response = client.post(f"/api/specimens/{specimen_id}/pick-region", json=negative_coordinates)
+        assert response.status_code == 422  # Validation error
 
 class TestErrorHandling:
     """Tests for error handling and edge cases"""
