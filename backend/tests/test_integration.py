@@ -120,14 +120,14 @@ class TestBackendIntegration:
                 
                 # Verify data types
                 assert isinstance(metadata['file_size'], (int, float)), "File size should be numeric"
-                assert isinstance(metadata['resolution_levels'], int), "Resolution levels should be integer"
-                assert isinstance(metadata['channels'], int), "Channels should be integer"
+                assert isinstance(metadata['resolution_levels'], list), "Resolution levels should be list"
+                assert isinstance(metadata['channels'], list), "Channels should be list"
                 assert isinstance(metadata['shapes'], dict), "Shapes should be dictionary"
                 
                 # Verify reasonable values
                 assert metadata['file_size'] > 0, "File size should be positive"
-                assert metadata['resolution_levels'] > 0, "Should have at least one resolution level"
-                assert metadata['channels'] > 0, "Should have at least one channel"
+                assert len(metadata['resolution_levels']) > 0, "Should have at least one resolution level"
+                assert len(metadata['channels']) > 0, "Should have at least one channel"
         else:
             pytest.skip(f"Image file not found: {image_path}")
 

@@ -164,7 +164,12 @@ These settings can be configured in `backend/app/config.py`:
 # Test backend
 ./scripts/docker_test.sh start && ./scripts/docker_test.sh test
 
+# test backend functionality in docker
+docker-compose up -d --force-recreate backend
+docker exec cerevi_backend_1 python -m pytest tests/ -v
+
 # Test frontend
+docker-compose up -d --force-recreate frontend
 cd frontend && npm test
 
 # Full platform test
