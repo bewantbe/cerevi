@@ -22,7 +22,8 @@ It is part of VISoR([Volumetric Imaging with Synchronized on-the-fly-scan and Re
 
 ## Quick Start
 
-### Production mode
+### Code and data setup
+
 ```bash
 # Clone and setup
 git clone <repository>
@@ -32,8 +33,18 @@ cd cerevi
 # You need to modify it to point to your data directory
 ./scripts/setup_data_links.sh
 
+# check .env file
+cat .env
+```
+
+### Production mode
+
+```bash
 # Start all services
 docker-compose up --build
+# or
+#docker-compose build          # rerun when code changes
+#docker-compose up             # ctrl + C to stop
 
 # Access the application
 open http://localhost:3000    # Frontend
@@ -45,12 +56,17 @@ open http://localhost:8000    # Backend API
 With hot reload of source code
 
 ```bash
-# Start development (with hot reload)
-./scripts/start_services.sh
+# or in debug mode
+docker-compose -f docker-compose.yml -f docker-compose.dev-frontend.yml -f docker-compose.dev-backend-no-redis.yml up --build
+
+#Or start development through
+#./scripts/app_services.sh start
 
 # Access the application
-open http://localhost:3000    # Frontend
+open http://localhost:3001    # Frontend, note the 3001
 open http://localhost:8000    # Backend API
+# View API documentation
+open http://localhost:8000/docs
 
 # Modify the code in the repository directory
 # The frontend and backend will automatically reload when you save changes
@@ -58,22 +74,24 @@ open http://localhost:8000    # Backend API
 
 ### Development Mode (Local)
 
-```bash
-# Backend development (local)
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-
-# View API documentation
-open http://localhost:8000/docs
-```
+Read the `frontend/Dockerfile`, `backend/Dockerfile`.
 
 ### Network Issues
 
 If you can't access Docker Hub, try:
+
 ```bash
 export http_proxy=<your_proxy>
 export https_proxy=<your_proxy>
+docker-compose up --build
+```
+
+If the rebuild is slow due to slow download, try look at repo url:
+```bash
+# Check the Dockerfile for pip source
+cat backend/Dockerfile | grep pip
+# Check the Dockerfile for apt source
+cat backend/Dockerfile | grep apt
 ```
 
 ### Clean up
@@ -83,7 +101,7 @@ export https_proxy=<your_proxy>
 docker-compose down
 # Remove all containers, networks, and volumes
 docker system prune -a --volumes
-# or just remove dangling images
+# or just remove dangling images (recommended)
 docker system prune
 ```
 
@@ -95,9 +113,7 @@ docker system prune
 - **[Frontend Development Guide](DEVELOPMENT.md)** - Frontend and full-stack development
 - **[API Documentation](http://localhost:8000/docs)** - Interactive API documentation (when running)
 
-## Data File Structure
-
-The platform organizes data into three main categories with specific file formats and naming conventions:
+## Data File
 
 ### Directory Structure
 ```

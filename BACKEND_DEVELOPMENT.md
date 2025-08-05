@@ -1,10 +1,51 @@
-# VISoR Platform Backend Development Guide
+# Backend Development Guide
 
-A comprehensive guide for developing the VISoR Platform backend - a high-performance FastAPI application for brain imaging visualization.
+## Quick Start
 
-## 🚀 Quick Start
+### Option 1: Docker Development, without Redis (Recommended)
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.dev-backend-no-redis.yml up backend frontend
 
-### Option 1: Local Development (Recommended)
+* Full rebuild (no cache): `docker-compose build --no-cache --force-rm`
+* Rebuild with cache: `docker-compose build --force-rm`
+* Build only if needed: `docker-compose build`
+* Pull latest base images: `docker-compose build --pull`
+
+# Test the API (Redis-related features will be disabled)
+curl http://localhost:8000/health
+curl http://localhost:8000/api/specimens | python3 -m json.tool
+```
+
+### Option 2: Docker Development, use script
+```bash
+# Rebuild all, start backend with Redis using Docker
+./scripts/start_services.sh
+
+# Test the API
+curl http://localhost:8000/health
+curl http://localhost:8000/api/specimens | python3 -m json.tool
+
+# Full test
+docker-compose exec backend python -m pytest tests/ -v -rs
+# or
+docker exec cerevi_backend_1 python -m pytest tests/ -v -rs
+
+# View logs
+docker-compose logs -f backend
+
+# Enter the backend container
+docker-compose exec backend /bin/sh       # about 0.74 s overhead
+# or
+docker exec -it cerevi_backend_1 /bin/sh  # about 0.15 s overhead
+
+# Stop containers
+docker-compose down
+
+# Restart containers
+docker-compose up --build -d
+```
+
+### Option 1: Local Development
 ```bash
 # Setup environment
 cd backend
@@ -19,38 +60,6 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 # Test the API
 curl http://localhost:8000/health
 curl http://localhost:8000/docs  # Interactive API documentation
-```
-
-### Option 2: Docker Development
-```bash
-# Start backend with Redis using Docker
-./scripts/docker_test.sh start
-
-# Test the API
-curl http://localhost:8000/health
-curl http://localhost:8000/api/specimens
-
-# View logs
-./scripts/docker_test.sh logs
-
-# Stop containers
-./scripts/docker_test.sh stop
-```
-
-### Option 3: Backend Development without Redis
-```bash
-# For backend development when Redis is not needed or available
-docker-compose -f docker-compose.yml -f docker-compose.dev-backend-no-redis.yml up backend frontend
-
-# This configuration:
-# ✅ Disables Redis dependency for backend
-# ✅ Enables debug mode  
-# ✅ Useful for testing without cache layer
-# ✅ Simplifies development setup
-
-# Test the API (Redis-related features will be disabled)
-curl http://localhost:8000/health
-curl http://localhost:8000/api/specimens
 ```
 
 ## 📋 Prerequisites
@@ -283,15 +292,11 @@ async def example_endpoint():
 ### Running Tests
 
 ```bash
-# Option 1: Using pytest (recommended)
+# Run all tests
 cd backend
 pytest tests/ -v
 
-# Option 2: Using simple test runner
-cd backend/tests
-python run_tests.py
-
-# Option 3: Run specific test files
+# Run specific test files
 pytest tests/test_integration.py
 pytest tests/test_api_endpoints.py
 ```

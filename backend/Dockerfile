@@ -5,6 +5,10 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
 
+RUN echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free" > /etc/apt/sources.list && \
+    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-updates main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free" >> /etc/apt/sources.list
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
@@ -17,15 +21,17 @@ RUN apt-get update && apt-get install -y \
 # Set work directory
 WORKDIR /app
 
+# Create data directory
+RUN mkdir -p /app/data
+
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple --upgrade pip --root-user-action ignore
+RUN pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+RUN pip install --no-cache-dir -r requirements.txt --root-user-action ignore
 
 # Copy application code
 COPY . .
-
-# Create data directory
-RUN mkdir -p /app/data
 
 # Expose port
 EXPOSE 8000
