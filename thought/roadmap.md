@@ -6,31 +6,28 @@
 * Finish backend/tests, mostly done.
 * add API tests for images - done.
 * add API tests for atlas - done.
-
-## TODO
-
 * improve doc of BACKEND_DEVELOPMENT.md
-  - make descriptioin of API more complete.
-  - make the backend_development.md more concise
-Too complecated, remove the asserts or tests that are not essential.
-Is `TestSpecimenEndpointsCoverage` a bit redundant?
-Check the returned image is not completely black.
-
-
-Side TODO:
-* Check code
-  - https://vscode.dev/github/bewantbe/cerevi/blob/main/docker-compose.yml#L27
-  - https://vscode.dev/github/bewantbe/cerevi/blob/main/docker-compose.yml#L28
+  - make descriptioin of API more complete - cancelled, leave it to code comments.
+  - make the backend_development.md more concise - done
 * Check code
   - https://vscode.dev/github/bewantbe/cerevi/blob/main/.env#L10-L15
+  - done
 * change code
   - ./scripts/start_services.sh
   - make it rebuild when asked, not always rebuild.
+  - done. use docker-compose to start the services.
+
+## TODO
+
+* Check the API tests
+    Too complecated, remove the asserts or tests that are not essential.
+    Is `TestSpecimenEndpointsCoverage` a bit redundant?
+    Check the returned image is not completely black.
 
 ## possible future tasks
 
-* improve documentation
 * test backend
+* improve documentation
 * test functionality
 * benchmark performance
 

@@ -1,5 +1,24 @@
 # Backend Development Guide
 
+## Configuration
+
+### Environment Variables
+Create a `.env` file in the project root, see `.env.example` for reference.
+
+### Data Setup (only need once)
+```bash
+# Setup data directory structure
+./scripts/setup_data_links.sh
+
+# Verify data is accessible
+ls -la data/specimens/macaque_brain_rm009/
+ls -la data/regions/
+ls -la data/models/
+```
+
+Note that the `/share/data` and `/home/xyy` path in `docker-compose.yml` is necessary
+because the data is link through symbolic links.
+
 ## Quick Start
 
 ### Docker development (recommended)
@@ -135,45 +154,6 @@ backend/
 ├── Dockerfile             # Production Docker image
 ├── requirements.txt       # Python dependencies
 └── README.md             # Basic backend info
-```
-
-## Configuration
-
-### Environment Variables
-Create a `.env` file in the project root:
-
-```bash
-# Frontend Configuration
-VITE_API_URL=http://localhost:8000
-VITE_APP_TITLE=VISoR Platform
-
-# Backend Configuration
-REDIS_URL=redis://redis:6379
-DATA_PATH=./data
-DEBUG=true
-
-# Data Source Paths (for symbolic links)
-IMAGE_DATA_PATH=./Macaque_Brain/RM009_2/z00000_c1_1.ims
-ATLAS_DATA_PATH=./Macaque_Brain/RM009_2/V1_layers/z00000_c1_mask.ims
-MODEL_DATA_PATH=./swc_collect/RM009/mesh/root/1.obj
-REGION_DATA_PATH=./swc_collect/RM009/mesh/NIHMS696288-supplement-4.xlsx
-
-# Application Settings
-DEFAULT_TILE_SIZE=512
-CACHE_TTL_TILES=3600
-CACHE_TTL_METADATA=86400
-MAX_RESOLUTION_LEVEL=7
-```
-
-### Data Setup (only once)
-```bash
-# Setup data directory structure
-./scripts/setup_data_links.sh
-
-# Verify data is accessible
-ls -la data/specimens/macaque_brain_rm009/
-ls -la data/regions/
-ls -la data/models/
 ```
 
 ## Working with the Code
