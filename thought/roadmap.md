@@ -94,3 +94,10 @@ Need to change:
   * code that generates these data
     - e.g. 'scripts/convert_regions.py', './scripts/setup_data_links.sh'
   * documentation
+
+* Clean up .env file
+  - some unnecessary variables
+  - IMAGE_DATA_PATH etc.
+
+* upgrade Python v11 to v13 for speed
+* upgrade Node.js v18 to v22 (e.g. v22.18.0 (LTS))

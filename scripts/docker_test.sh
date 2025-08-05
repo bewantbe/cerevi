@@ -5,6 +5,8 @@
 # Use docker-compose (or start_services.sh) for starting containers in usual case,
 # see also BACKEND_DEVELOPMENT.md
 
+# This file is deprecated and will be removed in the future.
+
 set -e
 
 BACKEND_CONTAINER="visor-backend-test"

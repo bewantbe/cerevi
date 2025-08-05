@@ -2,24 +2,11 @@
 
 ## Quick Start
 
-### Option 1: Docker Development, without Redis (Recommended)
+### Docker development (recommended)
+
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.dev-backend-no-redis.yml up backend frontend
-
-* Full rebuild (no cache): `docker-compose build --no-cache --force-rm`
-* Rebuild with cache: `docker-compose build --force-rm`
-* Build only if needed: `docker-compose build`
-* Pull latest base images: `docker-compose build --pull`
-
-# Test the API (Redis-related features will be disabled)
-curl http://localhost:8000/health
-curl http://localhost:8000/api/specimens | python3 -m json.tool
-```
-
-### Option 2: Docker Development, use script
-```bash
-# Rebuild all, start backend with Redis using Docker
-./scripts/start_services.sh
+# build without Redis
+docker-compose -f docker-compose.yml -f docker-compose.dev-backend-no-redis.yml up -d backend
 
 # Test the API
 curl http://localhost:8000/health
@@ -33,6 +20,12 @@ docker exec cerevi_backend_1 python -m pytest tests/ -v -rs
 # View logs
 docker-compose logs -f backend
 
+# Check Redis memory usage
+docker exec cerevi_redis_1 redis-cli info memory
+
+# Monitor container resources
+docker stats --no-stream cerevi_backend_1
+
 # Enter the backend container
 docker-compose exec backend /bin/sh       # about 0.74 s overhead
 # or
@@ -45,10 +38,18 @@ docker-compose down
 docker-compose up --build -d
 ```
 
-### Option 1: Local Development
+### Local Development
+
 ```bash
+sudo apt-get update && sudo apt-get install -y \
+    gcc g++ libhdf5-dev pkg-config curl python3-pip
+
+python3 -m venv visor-env
+source visor-env/bin/activate
+
 # Setup environment
 cd backend
+pip install --upgrade pip
 pip install -r requirements.txt
 
 # Start Redis (required for caching)
@@ -59,44 +60,50 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Test the API
 curl http://localhost:8000/health
-curl http://localhost:8000/docs  # Interactive API documentation
 ```
 
-## 📋 Prerequisites
+### API endpoints
 
-### System Requirements
-- **Python 3.11+** (recommended: 3.11.6)
-- **Redis 7+** (for caching)
-- **Git** (for version control)
-- **Docker & Docker Compose** (optional, for containerized development)
+See the [API documentation](http://localhost:8000/docs) for details on available endpoints.
+Need to run the backend server first.
 
-### System Dependencies (Linux/macOS)
+### API Testing
+
+With curl
+
 ```bash
-# Ubuntu/Debian
-sudo apt-get update && sudo apt-get install -y \
-    gcc g++ libhdf5-dev pkg-config curl python3-pip
+# Health check
+curl http://localhost:8000/health
 
-# macOS (with Homebrew)
-brew install hdf5 pkg-config redis
+# Get specimens
+curl http://localhost:8000/api/specimens
 
-# Fedora/RHEL
-sudo dnf install gcc gcc-c++ hdf5-devel pkgconfig curl python3-pip
+# Get specimen details
+curl http://localhost:8000/api/specimens/macaque_brain_rm009
+
+# Get brain regions
+curl http://localhost:8000/api/specimens/macaque_brain_rm009/regions
+
+# Test with JSON data
+curl -X POST http://localhost:8000/api/specimens/macaque_brain_rm009/pick-region \
+  -H "Content-Type: application/json" \
+  -d '{"x": 100, "y": 200, "z": 50, "view": "sagittal", "level": 3}'
 ```
 
-### Python Environment Setup
-```bash
-# Create virtual environment (recommended)
-python3 -m venv visor-env
-source visor-env/bin/activate  # Linux/macOS
-# visor-env\Scripts\activate   # Windows
+With pytest
 
-# Install dependencies
+```bash
+# Run all tests
 cd backend
-pip install --upgrade pip
-pip install -r requirements.txt
+pytest tests/ -v
+
+# Run specific test files
+pytest tests/test_integration.py
+pytest tests/test_api_endpoints.py
 ```
 
-## 🏗️ Project Structure
+
+## Project Structure
 
 ```
 backend/
@@ -130,33 +137,35 @@ backend/
 └── README.md             # Basic backend info
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 Create a `.env` file in the project root:
 
 ```bash
-# Application settings
-DEBUG=true
-LOG_LEVEL=INFO
-HOST=0.0.0.0
-PORT=8000
+# Frontend Configuration
+VITE_API_URL=http://localhost:8000
+VITE_APP_TITLE=VISoR Platform
 
-# Data paths
+# Backend Configuration
+REDIS_URL=redis://redis:6379
 DATA_PATH=./data
-SPECIMENS_PATH=./data/specimens
-MODELS_PATH=./data/models
-REGIONS_PATH=./data/regions
+DEBUG=true
 
-# Redis settings
-REDIS_URL=redis://localhost:6379
-REDIS_DB=0
+# Data Source Paths (for symbolic links)
+IMAGE_DATA_PATH=./Macaque_Brain/RM009_2/z00000_c1_1.ims
+ATLAS_DATA_PATH=./Macaque_Brain/RM009_2/V1_layers/z00000_c1_mask.ims
+MODEL_DATA_PATH=./swc_collect/RM009/mesh/root/1.obj
+REGION_DATA_PATH=./swc_collect/RM009/mesh/NIHMS696288-supplement-4.xlsx
 
-# CORS settings (for frontend development)
-CORS_ORIGINS=["http://localhost:3000","http://localhost:3001","http://localhost:5173"]
+# Application Settings
+DEFAULT_TILE_SIZE=512
+CACHE_TTL_TILES=3600
+CACHE_TTL_METADATA=86400
+MAX_RESOLUTION_LEVEL=7
 ```
 
-### Data Setup
+### Data Setup (only once)
 ```bash
 # Setup data directory structure
 ./scripts/setup_data_links.sh
@@ -167,43 +176,7 @@ ls -la data/regions/
 ls -la data/models/
 ```
 
-## 💻 Development Workflow
-
-### Running the Backend Locally
-
-1. **Start Redis** (required for caching):
-   ```bash
-   # Option 1: Local Redis
-   redis-server
-   
-   # Option 2: Docker Redis
-   docker run -d --name redis-dev -p 6379:6379 redis:7-alpine
-   ```
-
-2. **Start the FastAPI server**:
-   ```bash
-   cd backend
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-3. **Verify it's working**:
-   ```bash
-   # Health check
-   curl http://localhost:8000/health
-   
-   # Browse API documentation
-   open http://localhost:8000/docs
-   ```
-
-### Development Features
-
-- **Hot Reload**: Code changes automatically reload the server
-- **Interactive Docs**: Auto-generated API documentation at `/docs`
-- **Health Monitoring**: Built-in health check endpoint
-- **Comprehensive Logging**: Structured logging with configurable levels
-- **CORS Support**: Pre-configured for frontend development
-
-## 🔧 Working with the Code
+## Working with the Code
 
 ### Adding New API Endpoints
 
@@ -287,26 +260,6 @@ async def example_endpoint():
         raise HTTPException(status_code=500, detail="Internal server error")
 ```
 
-## 🧪 Testing
-
-### Running Tests
-
-```bash
-# Run all tests
-cd backend
-pytest tests/ -v
-
-# Run specific test files
-pytest tests/test_integration.py
-pytest tests/test_api_endpoints.py
-```
-
-### Test Categories
-
-- **Integration Tests** (`test_integration.py`): Test component integration
-- **API Tests** (`test_api_endpoints.py`): Test REST API endpoints
-- **Unit Tests**: Test individual functions and classes
-
 ### Writing New Tests
 
 ```python
@@ -329,359 +282,3 @@ async def test_async_function():
     result = await my_async_function()
     assert result is not None
 ```
-
-### API Testing with curl
-
-```bash
-# Health check
-curl http://localhost:8000/health
-
-# Get specimens
-curl http://localhost:8000/api/specimens
-
-# Get specimen details
-curl http://localhost:8000/api/specimens/macaque_brain_rm009
-
-# Get brain regions
-curl http://localhost:8000/api/specimens/macaque_brain_rm009/regions
-
-# Test with JSON data
-curl -X POST http://localhost:8000/api/specimens/macaque_brain_rm009/pick-region \
-  -H "Content-Type: application/json" \
-  -d '{"x": 100, "y": 200, "z": 50, "view": "sagittal", "level": 3}'
-```
-
-## 🐳 Docker Development
-
-### Using Docker for Development
-
-```bash
-# Build and start all services
-./scripts/docker_test.sh start
-
-# Check container status
-./scripts/docker_test.sh status
-
-# View backend logs
-./scripts/docker_test.sh logs
-
-# Run API tests
-./scripts/docker_test.sh test
-
-# Stop all containers
-./scripts/docker_test.sh stop
-
-# Clean up containers
-./scripts/docker_test.sh remove
-```
-
-### Docker Development Features
-
-- **Consistent Environment**: Same environment across all developers
-- **Redis Integration**: Automatically configured Redis caching
-- **Data Volume Mounting**: Access to large datasets
-- **Health Monitoring**: Automatic health checks
-- **Easy Reset**: Quick container recreation
-
-### Docker Compose Services
-
-```yaml
-# docker-compose.yml (relevant backend parts)
-backend:
-  build: ./backend
-  ports:
-    - "8000:8000"
-  environment:
-    - REDIS_URL=redis://redis:6379
-    - DATA_PATH=/app/data
-  volumes:
-    - ./backend:/app
-    - ./data:/app/data:ro
-  depends_on:
-    - redis
-
-redis:
-  image: redis:7-alpine
-  ports:
-    - "6379:6379"
-  command: redis-server --maxmemory 2gb --maxmemory-policy allkeys-lru
-```
-
-## 🔍 Debugging and Logging
-
-### Logging Configuration
-
-```python
-import logging
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-# Use logging in your code
-logger.info("Processing request")
-logger.warning("Unusual condition detected")
-logger.error("Error occurred", exc_info=True)
-```
-
-### Debug Mode Features
-
-```bash
-# Enable debug mode
-export DEBUG=true
-
-# Start with debug logging
-uvicorn app.main:app --reload --log-level debug
-```
-
-Debug mode enables:
-- Detailed error messages
-- Interactive API documentation
-- Verbose logging
-- Hot reload on code changes
-
-### Common Debugging Scenarios
-
-```bash
-# Check if Redis is accessible
-redis-cli ping
-
-# Verify data paths exist
-ls -la data/specimens/macaque_brain_rm009/
-
-# Test specific API endpoint
-curl -v http://localhost:8000/api/specimens
-
-# Check container logs
-docker logs visor-backend-test
-
-# Monitor resource usage
-docker stats visor-backend-test
-```
-
-## 🚀 Performance Optimization
-
-### Caching Strategy
-
-The backend uses Redis for caching:
-- **Tile Cache**: Image tiles cached for 1 hour
-- **Metadata Cache**: Specimen metadata cached for 24 hours
-- **Region Cache**: Brain region data cached for 24 hours
-
-### Memory Management
-
-```python
-# Efficient data loading
-with h5py.File(image_path, 'r') as f:
-    # Load only required data chunks
-    tile_data = f['DataSet'][z, y:y+512, x:x+512]
-
-# Use generators for large datasets
-def process_large_dataset():
-    for chunk in dataset_chunks:
-        yield process_chunk(chunk)
-```
-
-### Performance Monitoring
-
-```bash
-# Monitor API response times
-curl -w "Time: %{time_total}s\n" http://localhost:8000/api/specimens
-
-# Check Redis memory usage
-redis-cli info memory
-
-# Monitor container resources
-docker stats --no-stream visor-backend-test
-```
-
-## 📚 API Reference
-
-### Core Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Service health check |
-| `/api/specimens` | GET | List all specimens |
-| `/api/specimens/{id}` | GET | Get specimen details |
-| `/api/specimens/{id}/image/{view}/{level}/{z}/{x}/{y}` | GET | Get image tile |
-| `/api/specimens/{id}/atlas/{view}/{level}/{z}/{x}/{y}` | GET | Get atlas mask |
-| `/api/specimens/{id}/regions` | GET | Get brain regions |
-| `/api/specimens/{id}/pick-region` | POST | Identify region by coordinates |
-| `/api/specimens/{id}/metadata` | GET | Get complete metadata |
-
-### Response Formats
-
-All API responses use JSON format with consistent error handling:
-
-```json
-// Success response
-{
-  "id": "macaque_brain_rm009",
-  "name": "Macaque Brain RM009",
-  "status": "available"
-}
-
-// Error response
-{
-  "detail": "Specimen not found",
-  "status_code": 404
-}
-```
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-**1. Redis Connection Failed**
-```bash
-# Check if Redis is running
-redis-cli ping
-# Expected: PONG
-
-# Start Redis if not running
-redis-server
-# or with Docker:
-docker run -d --name redis-dev -p 6379:6379 redis:7-alpine
-```
-
-**2. Data Path Not Found**
-```bash
-# Verify data directory exists
-ls -la data/specimens/macaque_brain_rm009/
-
-# Setup data links if missing
-./scripts/setup_data_links.sh
-```
-
-**3. Import Errors**
-```bash
-# Verify Python environment
-python -c "import fastapi, h5py, redis; print('Dependencies OK')"
-
-# Reinstall dependencies if needed
-pip install -r requirements.txt --force-reinstall
-```
-
-**4. Port Already in Use**
-```bash
-# Find process using port 8000
-lsof -i :8000
-
-# Kill process or use different port
-uvicorn app.main:app --reload --port 8001
-```
-
-**5. Docker Container Issues**
-```bash
-# Check container status
-docker ps -a
-
-# View container logs
-docker logs visor-backend-test
-
-# Rebuild containers
-docker-compose down && docker-compose up --build
-```
-
-### Performance Issues
-
-**Slow API Responses:**
-- Check Redis cache hit rates
-- Monitor data file access patterns
-- Verify network connectivity
-- Review query optimization
-
-**High Memory Usage:**
-- Monitor HDF5 file access patterns
-- Check for memory leaks in processing
-- Optimize data loading strategies
-
-### Getting Help
-
-1. **Check Logs**: Always start with application logs
-2. **API Documentation**: Visit `/docs` for interactive testing
-3. **Test Scripts**: Use `./scripts/docker_test.sh test` for validation
-4. **Container Inspection**: Use `docker logs` and `docker stats`
-
-## 🚀 Production Deployment
-
-### Environment Preparation
-
-```bash
-# Production environment variables
-export DEBUG=false
-export LOG_LEVEL=WARNING
-export REDIS_URL=redis://production-redis:6379
-export DATA_PATH=/data/visor
-```
-
-### Docker Production Build
-
-```bash
-# Build production image
-docker build -t visor-backend:latest ./backend
-
-# Run production container
-docker run -d \
-  --name visor-backend-prod \
-  -p 8000:8000 \
-  -e DEBUG=false \
-  -e REDIS_URL=redis://redis:6379 \
-  -v /data/visor:/app/data:ro \
-  visor-backend:latest
-```
-
-### Health Monitoring
-
-The backend includes comprehensive health checks:
-- **Health Endpoint**: `/health` returns service status
-- **Docker Health Check**: Automatic container health monitoring
-- **Redis Connectivity**: Verifies cache availability
-- **Data Access**: Confirms data path accessibility
-
-### Security Considerations
-
-- **Read-only Data Mounts**: Data volumes mounted as read-only
-- **Environment Isolation**: Use environment variables for secrets
-- **CORS Configuration**: Restrict origins in production
-- **Container Security**: Run with non-root user in production
-
-## 📈 Next Steps
-
-### Advanced Development Topics
-
-- **Custom Middleware**: Add request/response processing
-- **Database Integration**: Connect to PostgreSQL/MongoDB
-- **Authentication**: Add JWT-based authentication
-- **Rate Limiting**: Implement API rate limiting
-- **Monitoring**: Add Prometheus metrics
-- **Documentation**: Generate OpenAPI specifications
-
-### Contributing to the Backend
-
-1. **Fork the repository**
-2. **Create feature branch**: `git checkout -b feature/my-feature`
-3. **Write tests**: Add tests for new functionality
-4. **Follow code style**: Use `black` and `isort` for formatting
-5. **Update documentation**: Keep this guide up to date
-6. **Submit pull request**: Include clear description of changes
-
----
-
-## 📞 Support
-
-For questions or issues with backend development:
-
-1. **Check this guide** for common solutions
-2. **Review test results** with `./scripts/docker_test.sh test`
-3. **Check application logs** for error details
-4. **Consult API documentation** at `/docs`
-5. **Create an issue** in the project repository
-
----
-
-*This guide covers VISoR Platform Backend v1.0.0. For frontend development, see [DEVELOPMENT.md](DEVELOPMENT.md).*

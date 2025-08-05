@@ -67,9 +67,17 @@ open http://localhost:3001    # Frontend, note the 3001
 open http://localhost:8000    # Backend API
 # View API documentation
 open http://localhost:8000/docs
+# simple tests
+curl http://localhost:8000/health
+curl http://localhost:8000/api/specimens | python3 -m json.tool
 
 # Modify the code in the repository directory
 # The frontend and backend will automatically reload when you save changes
+
+# one needs a full rebuild when switching between production and development mode
+docker-compose $extra_yml_files build --no-cache --force-rm
+# or
+docker-compose $extra_yml_files up --build --force-recreate
 ```
 
 ### Development Mode (Local)
