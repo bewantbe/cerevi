@@ -1,58 +1,44 @@
 # VISoR Platform Development Guide
 
-A comprehensive guide for frontend and full-stack development of the VISoR Platform.
+## Quick Start
 
-> **Note**: For backend-specific development, see [BACKEND_DEVELOPMENT.md](BACKEND_DEVELOPMENT.md)
+### Frontend development with hot reload.
 
-## 🚀 Quick Start
-
-### Frontend Development (Hot Reload)
 ```bash
-# Start development environment with hot reloading
-./scripts/start_services.sh
+# see README.md for details
+docker-compose -f docker-compose.yml -f docker-compose.dev-frontend.yml -f docker-compose.dev-backend-no-redis.yml up --build
 
 # Access the application
 open http://localhost:3001  # Frontend with hot reload
 open http://localhost:8000  # Backend API
 ```
 
-### Local Frontend Development
+**Debugging**
+
 ```bash
-# Install dependencies
-cd frontend
-npm install
+# View frontend container logs
+docker-compose logs frontend
 
-# Start Vite dev server
-npm run dev
+# Access container shell
+docker-compose exec frontend sh
 
-# Access at http://localhost:5173
+# Check Vite dev server status
+curl http://localhost:3001
+
+# Monitor container resources
+docker stats frontend
 ```
 
-### Full Stack Development
-```bash
-# Start backend (see BACKEND_DEVELOPMENT.md for details)
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+**Why Different Ports?**
+- **Port 3000**: Production nginx server
+- **Port 3001**: Development Vite server with HMR
+- **Port 5173**: Internal Vite dev server port
 
-# Start frontend (in another terminal)
-cd frontend
-npm run dev
+### System Setup and local development
 
-# Both services running independently
-```
-
-## 📋 Prerequisites
-
-### Frontend Requirements
-- **Node.js 18+** (recommended: LTS version)
-- **npm 9+** or **yarn 1.22+**
-- **Git** (for version control)
-
-### System Setup
 ```bash
 # Verify Node.js version
-node --version  # Should be 18+
+node --version  # Should be 18+, better LTS
 
 # Verify npm version  
 npm --version   # Should be 9+
@@ -60,9 +46,41 @@ npm --version   # Should be 9+
 # Install dependencies
 cd frontend
 npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Run tests
+npm run test
+
+# Lint and format code
+npm run lint
+npm run format
 ```
 
-## 🏗️ Frontend Project Structure
+### Running Tests
+```bash
+# Unit tests with Vitest
+cd frontend
+npm run test
+
+# Watch mode for development
+npm run test:watch
+
+# Coverage report
+npm run test:coverage
+
+# E2E tests (if configured)
+npm run test:e2e
+```
+
+## Frontend Project Structure
 
 ```
 frontend/
@@ -91,83 +109,7 @@ frontend/
 └── Dockerfile.dev         # Development Docker image
 ```
 
-## 💻 Development Workflow
-
-### Docker Development (Recommended)
-
-**Hot Reloading with Docker:**
-```bash
-# Start development environment
-./scripts/start_services.sh
-
-# What this does:
-# ✅ Stops existing containers
-# ✅ Rebuilds development images
-# ✅ Starts Vite dev server with HMR
-# ✅ Mounts source code for live updates
-```
-
-**Backend Development without Redis:**
-```bash
-# For backend development when Redis is not needed or available
-docker-compose -f docker-compose.yml -f docker-compose.dev-backend-no-redis.yml up backend frontend
-
-# This configuration:
-# ✅ Disables Redis dependency for backend
-# ✅ Enables debug mode
-# ✅ Useful for testing without cache layer
-```
-
-**Access Points:**
-- **Frontend (Hot Reload)**: http://localhost:3001
-- **Backend API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-
-**Development Features:**
-- ✅ **Hot Module Replacement (HMR)**: Instant updates without page refresh
-- ✅ **Vue DevTools**: Browser extension support
-- ✅ **TypeScript**: Real-time type checking
-- ✅ **ESLint**: Code quality checks
-- ✅ **Automatic Imports**: Auto-import Vue composables
-
-### Local Development
-
-**Start Frontend Locally:**
-```bash
-cd frontend
-
-# Install dependencies (first time)
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Run tests
-npm run test
-
-# Lint and format code
-npm run lint
-npm run format
-```
-
-**Environment Configuration:**
-```bash
-# frontend/.env.development
-VITE_API_URL=http://localhost:8000
-VITE_APP_TITLE=VISoR Platform (Dev)
-
-# frontend/.env.production
-VITE_API_URL=https://api.visor.example.com
-VITE_APP_TITLE=VISoR Platform
-```
-
-## 🔧 Frontend Technology Stack
+## Frontend Technology Stack
 
 ### Core Technologies
 - **Vue.js 3**: Reactive frontend framework
@@ -188,7 +130,7 @@ VITE_APP_TITLE=VISoR Platform
 - **Vitest**: Unit testing framework
 - **Vue DevTools**: Browser development extension
 
-## 🎨 Frontend Development Patterns
+## Frontend Development Patterns
 
 ### Vue 3 Composition API
 ```typescript
@@ -269,77 +211,6 @@ export const specimenApi = {
 }
 ```
 
-## 🐳 Docker Development Deep Dive
-
-### Development vs Production Containers
-
-**Development Configuration** (`docker-compose.dev.yml`):
-```yaml
-frontend:
-  build:
-    context: ./frontend
-    dockerfile: Dockerfile.dev
-  ports:
-    - "3001:5173"  # Map to Vite dev server
-  volumes:
-    - ./frontend:/app
-    - /app/node_modules
-  environment:
-    - VITE_API_URL=http://localhost:8000
-```
-
-**Production Configuration** (`docker-compose.yml`):
-```yaml
-frontend:
-  build: ./frontend
-  ports:
-    - "3000:80"  # Map to nginx
-  environment:
-    - VITE_API_URL=http://localhost:8000
-```
-
-### Container Management
-
-**Development Commands:**
-```bash
-# Start development environment
-./scripts/start_services.sh
-
-# Manual development startup
-docker-compose -f docker-compose.yml -f docker-compose.dev-frontend.yml up --build
-
-# View frontend logs
-docker-compose logs frontend
-
-# Rebuild frontend container
-docker-compose build frontend --no-cache
-
-# Stop and clean up
-docker-compose down --remove-orphans
-```
-
-**Why Different Ports?**
-- **Port 3000**: Production nginx server
-- **Port 3001**: Development Vite server with HMR
-- **Port 5173**: Internal Vite dev server port
-
-## 🧪 Testing
-
-### Running Tests
-```bash
-# Unit tests with Vitest
-cd frontend
-npm run test
-
-# Watch mode for development
-npm run test:watch
-
-# Coverage report
-npm run test:coverage
-
-# E2E tests (if configured)
-npm run test:e2e
-```
 
 ### Writing Tests
 ```typescript
@@ -356,7 +227,7 @@ describe('Header', () => {
 })
 ```
 
-## 🔍 Debugging
+## Debugging
 
 ### Vue DevTools
 1. Install Vue DevTools browser extension
@@ -377,22 +248,8 @@ watchEffect(() => {
 })
 ```
 
-### Container Debugging
-```bash
-# View frontend container logs
-docker-compose logs frontend
 
-# Access container shell
-docker-compose exec frontend sh
-
-# Check Vite dev server status
-curl http://localhost:3001
-
-# Monitor container resources
-docker stats frontend
-```
-
-## 🚀 Build and Deployment
+## Build and Deployment
 
 ### Production Build
 ```bash
@@ -419,7 +276,7 @@ docker run -d -p 3000:80 visor-frontend
 docker-compose up --build
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Vite Configuration
 ```typescript
@@ -462,7 +319,7 @@ export default defineConfig({
 }
 ```
 
-## 📚 Additional Resources
+## Additional Resources
 
 ### Frontend Documentation
 - **[Vue.js 3 Guide](https://vuejs.org/guide/)**
@@ -475,7 +332,7 @@ export default defineConfig({
 - **[Vite DevTools](https://github.com/webfansplz/vite-plugin-vue-devtools)**
 - **[ESLint Vue Plugin](https://eslint.vuejs.org/)**
 
-## 🛠️ Troubleshooting
+##️ Troubleshooting
 
 ### Common Issues
 
@@ -486,7 +343,8 @@ open http://localhost:3001  # Not 3000!
 
 # Restart development environment
 docker-compose down
-./scripts/start_services.sh
+./scripts/app_services.sh rebuild
+./scripts/app_services.sh start
 ```
 
 **2. TypeScript Errors**
@@ -524,19 +382,3 @@ curl http://localhost:8000/health
 3. **Optimize images** with appropriate formats and sizes
 4. **Use computed properties** instead of methods for reactive data
 5. **Implement virtual scrolling** for large lists
-
----
-
-## 📞 Support
-
-For frontend development questions:
-
-1. **Check this guide** for common solutions
-2. **Review Vue.js documentation** for framework-specific issues
-3. **Use Vue DevTools** for component debugging
-4. **Check browser console** for JavaScript errors
-5. **Review container logs** for Docker-related issues
-
----
-
-*This guide covers frontend and full-stack development. For backend-only development, see [BACKEND_DEVELOPMENT.md](BACKEND_DEVELOPMENT.md).*
