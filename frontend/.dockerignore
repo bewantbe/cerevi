@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+
+# IDE
+.vscode/
+
+# Config files that don't need to be in container
+.editorconfig
+eslint.config.ts
+vitest.config.ts
+#tsconfig.node.json

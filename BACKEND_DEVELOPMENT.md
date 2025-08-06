@@ -119,6 +119,12 @@ pytest tests/ -v
 # Run specific test files
 pytest tests/test_integration.py
 pytest tests/test_api_endpoints.py
+
+# Test Specific Class
+docker-compose exec backend python -m pytest tests/test_api_endpoints.py::TestHealthEndpoint -v -rs
+
+# Test Specific Method
+docker-compose exec backend python -m pytest tests/test_api_endpoints.py::TestHealthEndpoint::test_health_check -v -rs
 ```
 
 
