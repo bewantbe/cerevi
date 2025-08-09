@@ -38,7 +38,7 @@ venv.bak/
 
 # Backend testing
 backend/.pytest_cache/
-
+backend/tmp/
 
 # IDEs and editors
 .vscode/

@@ -24,6 +24,9 @@
     Is `TestSpecimenEndpointsCoverage` a bit redundant?
     Check the returned image is not completely black.
 
+* /docs: Specimen ID no options, View type no options.
+* "axes_order": "z_y_x" -> "zyx"
+
 ## possible future tasks
 
 * test backend

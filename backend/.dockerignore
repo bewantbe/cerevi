@@ -4,6 +4,8 @@ __pycache__/
 
 # Testing
 .pytest_cache/
+tmp/
+dev_script/
 
 # Git
 .git/

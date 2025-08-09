@@ -127,6 +127,15 @@ docker-compose exec backend python -m pytest tests/test_api_endpoints.py::TestHe
 docker-compose exec backend python -m pytest tests/test_api_endpoints.py::TestHealthEndpoint::test_health_check -v -rs
 ```
 
+# Currently testing
+```bash
+cd backend
+#curl -o tmp/image_tile.jpg "http://localhost:8000/api/specimens/macaque_brain_rm009/image/sagittal/0/0/0/0"
+curl -o tmp/image_tile.jpg "http://localhost:8000/api/specimens/macaque_brain_rm009/image/coronal/0/0/0/0"
+
+docker-compose exec backend python dev_script/fetch_image_backend.py
+docker-compose exec backend python dev_script/fetch_image_h5py.py
+```
 
 ## Project Structure
 
