@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     
     # Coordinate system settings
     coordinate_system: str = "right_handed"
-    axes_order: str = "z_y_x"  # Image array order
+    axes_order: str = "zyx"  # Image array order
     
     # Channel settings
     default_channels: Dict[str, str] = {

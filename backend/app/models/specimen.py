@@ -29,7 +29,7 @@ class SpecimenMetadata(BaseModel):
     channels: Dict[str, str] = Field(default_factory=dict)
     resolution_um: float = 10.0
     coordinate_system: CoordinateSystem = CoordinateSystem.RIGHT_HANDED
-    axes_order: str = "z_y_x"
+    axes_order: str = "zyx"
     
 class ImageInfo(BaseModel):
     """Image information model"""

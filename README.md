@@ -174,7 +174,7 @@ data/
 
 These settings can be configured in `backend/app/config.py`:
 
-- **Coordinate System**: Right-handed with z_y_x axes order (`coordinate_system`, `axes_order`)
+- **Coordinate System**: Right-handed with zyx axes order (`coordinate_system`, `axes_order`)
 - **Resolution**: e.g. 10 μm per pixel at level 0 (`image_resolution_um`)
 - **Tile Size**: e.g. 512×512 pixels for efficient streaming (`default_tile_size`)
 - **Supported Views**: Sagittal, coronal, horizontal (defined in view types)

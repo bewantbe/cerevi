@@ -79,7 +79,7 @@ def convert_xlsx_to_json(xlsx_path: str, output_path: str) -> None:
             "total_regions": len(regions),
             "conversion_date": pd.Timestamp.now().isoformat(),
             "coordinate_system": "right_handed",
-            "axes_order": "z_y_x"
+            "axes_order": "zyx"
         },
         "regions": regions,
         "hierarchy": hierarchy,
@@ -194,7 +194,7 @@ def create_mock_region_data(output_path: str) -> None:
             "total_regions": len(mock_regions),
             "conversion_date": pd.Timestamp.now().isoformat(),
             "coordinate_system": "right_handed",
-            "axes_order": "z_y_x"
+            "axes_order": "zyx"
         },
         "regions": mock_regions,
         "hierarchy": mock_hierarchy,

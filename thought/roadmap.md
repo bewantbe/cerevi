@@ -27,10 +27,9 @@
   - done
 * make docker read and writes data for mounted path use a predefined UID and GID.
   - done
+* ✓ "axes_order": "z_y_x" -> "zyx" (COMPLETED)
 
 ## TODO
-
-* "axes_order": "z_y_x" -> "zyx"
 
 * add speed benchmark script that test throughtput of image tile API, may include serial mode and parallel mode.
 
