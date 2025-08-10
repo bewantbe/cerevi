@@ -74,7 +74,7 @@ class ImarisHandler:
             dataset = self._file[dataset_path]
             return dataset.shape  # (z, y, x)
         except KeyError:
-            raise ValueError(f"Data not found for level {level}, channel {channel}")
+            raise KeyError(f"Data not found for level {level}, channel {channel}")
     
     def get_tile(self, view: ViewType, level: int, channel: int,
                  z: int, y: int, x: int, tile_size: int = 512) -> np.ndarray:
@@ -95,7 +95,11 @@ class ImarisHandler:
         Note: Coordinates (z,y,x) specify the origin (top-left corner) of the tile.
         """
         dataset_path = f'DataSet/ResolutionLevel {level}/TimePoint 0/Channel {channel}/Data'
-        dataset = self._file[dataset_path]
+        
+        try:
+            dataset = self._file[dataset_path]
+        except KeyError:
+            raise KeyError(f"Invalid level {level} or channel {channel}: dataset not found")
         
         data_shape = dataset.shape  # (z, y, x)
         
@@ -103,7 +107,7 @@ class ImarisHandler:
         pivot_zyx = (z, y, x)
         for i in range(3):
             if pivot_zyx[i] < 0 or pivot_zyx[i] >= data_shape[i]:
-                raise ValueError(f"Coordinate {pivot_zyx[i]} out of bounds for dimension {i} with size {data_shape[i]}")
+                raise IndexError(f"Coordinate {pivot_zyx[i]} out of bounds for dimension {i} with size {data_shape[i]}")
 
         # Extract slice based on view type with same logic as h5py implementation
         if view == ViewType.CORONAL:
@@ -179,12 +183,12 @@ class ImarisHandler:
             # Check bounds
             shape = dataset.shape  # (z, y, x)
             if not (0 <= z < shape[0] and 0 <= y < shape[1] and 0 <= x < shape[2]):
-                raise ValueError(f"Coordinates ({x}, {y}, {z}) out of bounds for shape {shape}")
+                raise IndexError(f"Coordinates ({x}, {y}, {z}) out of bounds for shape {shape}")
             
             return dataset[z, y, x]
             
         except KeyError:
-            raise ValueError(f"Data not found for level {level}, channel {channel}")
+            raise KeyError(f"Data not found for level {level}, channel {channel}")
 
     def calculate_tile_grid_size(self, view: ViewType, level: int, 
                                 tile_size: int = 512) -> Tuple[int, int]:

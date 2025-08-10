@@ -63,7 +63,14 @@ async def get_image_tile(
         
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except KeyError as e:
+        # e.g. level not exist
+        raise HTTPException(status_code=422, detail=str(e))
+    except IndexError as e:
+        # e.g. z/y/x coordinate out of bounds
+        raise HTTPException(status_code=422, detail=str(e))
     except ValueError as e:
+        # e.g. invalid view type
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Failed to extract image tile: {e}")
@@ -118,7 +125,14 @@ async def get_atlas_tile(
         
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except KeyError as e:
+        # e.g. level not exist
+        raise HTTPException(status_code=422, detail=str(e))
+    except IndexError as e:
+        # e.g. z/y/x coordinate out of bounds
+        raise HTTPException(status_code=422, detail=str(e))
     except ValueError as e:
+        # e.g. invalid view type
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Failed to extract atlas tile: {e}")
@@ -142,6 +156,12 @@ async def get_tile_grid_info(
         
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except KeyError as e:
+        # e.g. level not exist
+        raise HTTPException(status_code=422, detail=str(e))
+    except ValueError as e:
+        # e.g. invalid view type
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Failed to get tile grid info: {e}")
         raise HTTPException(status_code=500, detail="Failed to get tile grid information")

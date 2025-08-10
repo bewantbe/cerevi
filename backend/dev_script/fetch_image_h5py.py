@@ -74,10 +74,11 @@ def read_save_ims(specimen_id, view, level, channel, z, y, x, tile_size):
         
         if dataset_path not in h5_file:
             print(f"Error: Dataset not found at {dataset_path}")
-            print(f"Available datasets:")
-            def print_structure(name, obj):
-                print(f"  {name}")
-            h5_file.visititems(print_structure)
+            if 0:
+                print(f"Available datasets:")
+                def print_structure(name, obj):
+                    print(f"  {name}")
+                h5_file.visititems(print_structure)
             return 1
         
         dataset = h5_file[dataset_path]
