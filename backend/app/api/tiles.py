@@ -17,18 +17,22 @@ router = APIRouter()
 # Initialize tile service
 tile_service = TileService()
 
-@router.get("/specimens/{specimen_id}/image/{view}/{level}/{z}/{x}/{y}")
+@router.get("/specimens/{specimen_id}/image/{view}/{level}/{z}/{y}/{x}")
 async def get_image_tile(
     specimen_id: str = Path(..., description="Specimen ID"),
     view: ViewType = Path(..., description="View type (sagittal, coronal, horizontal)"),
-    level: int = Path(..., ge=0, le=7, description="Resolution level (0-7)"),
-    z: int = Path(..., ge=0, description="Slice index"),
-    x: int = Path(..., ge=0, description="Tile X coordinate"),
-    y: int = Path(..., ge=0, description="Tile Y coordinate"),
-    channel: Optional[int] = Query(0, ge=0, le=3, description="Channel (0-3)"),
-    tile_size: Optional[int] = Query(None, ge=64, le=2048, description="Tile size")
+    level: int = Path(..., ge=0, le=7, description="Resolution level (e.g. 0-7)"),
+    z: int = Path(..., ge=0, description="Z coordinate (pixel position)"),
+    y: int = Path(..., ge=0, description="Y coordinate (pixel position)"),
+    x: int = Path(..., ge=0, description="X coordinate (pixel position)"),
+    channel: int = Query(0, ge=0, le=999, description="Channel (e.g. 0-3)"),
+    tile_size: Optional[int] = Query(None, ge=8, le=65535, description="Tile size")
 ):
-    """Get image tile for specified coordinates and parameters"""
+    """Get image tile for specified pixel coordinates and parameters
+    
+    Coordinates (z,y,x) specify the origin (top-left corner) of the tile in 3D volume.
+    tile_size: size of the extracted square tile (defaults to 512)
+    """
     
     # Verify specimen exists
     if not get_specimen_config(specimen_id):
@@ -42,8 +46,8 @@ async def get_image_tile(
             level=level,
             channel=channel,
             z=z,
-            x=x,
             y=y,
+            x=x,
             tile_size=tile_size
         )
         
@@ -53,7 +57,7 @@ async def get_image_tile(
             media_type="image/jpeg",
             headers={
                 "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
-                "X-Tile-Info": f"{specimen_id}/{view}/{level}/{z}/{x}/{y}/ch{channel}"
+                "X-Tile-Info": f"{specimen_id}/{view}/{level}/{z}/{y}/{x}/ch{channel}"
             }
         )
         
@@ -65,17 +69,26 @@ async def get_image_tile(
         logger.error(f"Failed to generate image tile: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate tile")
 
-@router.get("/specimens/{specimen_id}/atlas/{view}/{level}/{z}/{x}/{y}")
+@router.get("/specimens/{specimen_id}/atlas/{view}/{level}/{z}/{y}/{x}")
 async def get_atlas_tile(
     specimen_id: str = Path(..., description="Specimen ID"),
     view: ViewType = Path(..., description="View type (sagittal, coronal, horizontal)"),
     level: int = Path(..., ge=0, le=7, description="Resolution level (0-7)"),
-    z: int = Path(..., ge=0, description="Slice index"),
-    x: int = Path(..., ge=0, description="Tile X coordinate"),
-    y: int = Path(..., ge=0, description="Tile Y coordinate"),
+    z: int = Path(..., ge=0, description="Z coordinate (pixel position)"),
+    y: int = Path(..., ge=0, description="Y coordinate (pixel position)"),
+    x: int = Path(..., ge=0, description="X coordinate (pixel position)"),
     tile_size: Optional[int] = Query(None, ge=64, le=2048, description="Tile size")
 ):
-    """Get atlas mask tile for specified coordinates"""
+    """Get atlas mask tile for specified pixel coordinates
+    
+    Coordinates specify the origin (top-left corner) of the tile in 3D volume:
+    - z: slice index in the Z dimension
+    - y: pixel Y coordinate (row) within the slice  
+    - x: pixel X coordinate (column) within the slice
+    - tile_size: size of the extracted square tile (defaults to 512)
+    
+    The tile is extracted starting from origin coordinates (z,y,x) with the specified tile_size.
+    """
     
     # Verify specimen exists
     if not get_specimen_config(specimen_id):
@@ -88,8 +101,8 @@ async def get_atlas_tile(
             view=view,
             level=level,
             z=z,
-            x=x,
             y=y,
+            x=x,
             tile_size=tile_size
         )
         
@@ -99,7 +112,7 @@ async def get_atlas_tile(
             media_type="image/png",
             headers={
                 "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
-                "X-Atlas-Info": f"{specimen_id}/{view}/{level}/{z}/{x}/{y}"
+                "X-Atlas-Info": f"{specimen_id}/{view}/{level}/{z}/{y}/{x}"
             }
         )
         

@@ -99,6 +99,10 @@ def read_save_ims(specimen_id, view, level, channel, z, y, x, tile_size):
 
         # Extract slice based on view type
         # zero-padding should be also in this step
+        #             horizontal  vertical
+        # coronal:    -x          -y
+        # sagittal:    z          -y
+        # horizontal: -x          -z
         if view == "coronal":
             rg_horizontal = slice(x, x + tile_size)  # -x
             rg_vertical   = slice(y, y + tile_size)  # -y
@@ -108,8 +112,8 @@ def read_save_ims(specimen_id, view, level, channel, z, y, x, tile_size):
             rg_vertical   = slice(y, y + tile_size)  # -y
             tile = dataset[rg_horizontal, rg_vertical, x][:, ::-1].T
         elif view == "horizontal":
-            rg_horizontal = slice(x, x + tile_size)  # -X
-            rg_vertical   = slice(z, z + tile_size)  # -Z
+            rg_horizontal = slice(x, x + tile_size)  # -x
+            rg_vertical   = slice(z, z + tile_size)  # -z
             tile = dataset[rg_vertical, y, rg_horizontal][::-1, ::-1]
         else:
             print(f"Error: Unknown view type: {view}")
@@ -129,8 +133,10 @@ def read_save_ims(specimen_id, view, level, channel, z, y, x, tile_size):
         print(f"  Min:  {np.min(tile):.2f}")
         print(f"  Max:  {np.max(tile):.2f}")
 
+        # extra flip for conventional vertical axis direction when saving to file
+        tile_f = tile[::-1, :]
         # save image
-        image_bytes = array_to_image_bytes(tile, format='JPEG')
+        image_bytes = array_to_image_bytes(tile_f, format='JPEG')  
         output_path = Path(__file__).parent / f"image_h5py_{specimen_id}_{view}_l{level}_c{channel}_z{z}_y{y}_x{x}.jpg"
         with open(output_path, 'wb') as f:
             f.write(image_bytes)

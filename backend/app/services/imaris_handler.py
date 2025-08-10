@@ -97,63 +97,58 @@ class ImarisHandler:
         except KeyError:
             raise ValueError(f"Data not found for level {level}, channel {channel}")
     
-    def get_slice(self, view: ViewType, level: int, channel: int, slice_idx: int) -> np.ndarray:
-        """Extract 2D slice from 3D data"""
+    def get_tile(self, view: ViewType, level: int, channel: int,
+                 z: int, y: int, x: int, tile_size: int = 512) -> np.ndarray:
+        """Extract tile from 3D data using direct pixel coordinates
+        
+        Args:
+            view: View type (coronal, sagittal, horizontal)
+            level: Resolution level
+            channel: Channel index
+            z: Z coordinate (pixel position)
+            y: Y coordinate (pixel position)
+            x: X coordinate (pixel position)
+            tile_size: Size of extracted tile
+            
+        Returns:
+            2D numpy array containing the extracted tile
+            
+        Note: Coordinates (z,y,x) specify the origin (top-left corner) of the tile.
+        """
         if not self.is_open:
             raise RuntimeError("File not open")
             
-        try:
-            dataset_path = f'DataSet/ResolutionLevel {level}/TimePoint 0/Channel {channel}/Data'
-            dataset = self._file[dataset_path]
-            
-            # Get coordinate transform for this view
-            transform = COORDINATE_TRANSFORMS[view]
-            
-            # Extract slice based on view type
-            if view == ViewType.SAGITTAL:
-                # Fix X, vary Z,Y
-                slice_data = dataset[:, :, slice_idx]  # (z, y)
-            elif view == ViewType.CORONAL:
-                # Fix Y, vary Z,X
-                slice_data = dataset[:, slice_idx, :]  # (z, x)
-            elif view == ViewType.HORIZONTAL:
-                # Fix Z, vary Y,X
-                slice_data = dataset[slice_idx, :, :]  # (y, x)
-            else:
-                raise ValueError(f"Unknown view type: {view}")
-                
-            return slice_data
-            
-        except KeyError:
-            raise ValueError(f"Data not found for level {level}, channel {channel}")
-    
-    def get_tile(self, view: ViewType, level: int, channel: int, z: int, 
-                 x: int, y: int, tile_size: int = 512) -> np.ndarray:
-        """Extract tile from slice"""
-        if not self.is_open:
-            raise RuntimeError("File not open")
-            
-        # Get the full slice first
-        slice_data = self.get_slice(view, level, channel, z)
+        dataset_path = f'DataSet/ResolutionLevel {level}/TimePoint 0/Channel {channel}/Data'
+        dataset = self._file[dataset_path]
         
-        # Calculate tile boundaries
-        height, width = slice_data.shape
+        data_shape = dataset.shape  # (z, y, x)
         
-        # Calculate actual tile boundaries (may be smaller at edges)
-        x_start = x * tile_size
-        x_end = min(x_start + tile_size, width)
-        y_start = y * tile_size
-        y_end = min(y_start + tile_size, height)
-        
-        # Extract tile
-        tile = slice_data[y_start:y_end, x_start:x_end]
-        
-        # Pad tile if it's smaller than requested size (edge cases)
-        if tile.shape[0] < tile_size or tile.shape[1] < tile_size:
-            padded_tile = np.zeros((tile_size, tile_size), dtype=tile.dtype)
-            padded_tile[:tile.shape[0], :tile.shape[1]] = tile
-            tile = padded_tile
+        # Validate coordinates
+        pivot_zyx = (z, y, x)
+        for i in range(3):
+            if pivot_zyx[i] < 0 or pivot_zyx[i] >= data_shape[i]:
+                raise ValueError(f"Coordinate {pivot_zyx[i]} out of bounds for dimension {i} with size {data_shape[i]}")
+
+        # Extract slice based on view type with same logic as h5py implementation
+        if view == ViewType.CORONAL:
+            rg_vertical = slice(y, data_shape[1])      # -y direction
+            rg_horizontal = slice(x, data_shape[2])    # -x direction
+            tile = dataset[z, rg_vertical, rg_horizontal][::-1, ::-1]
             
+        elif view == ViewType.SAGITTAL:
+            rg_horizontal = slice(z, data_shape[0])    #  z direction
+            rg_vertical = slice(y, data_shape[1])      # -y direction
+            tile = dataset[rg_horizontal, rg_vertical, x][:, ::-1].T
+            
+        elif view == ViewType.HORIZONTAL:
+            rg_horizontal = slice(x, data_shape[2])    # -x direction
+            rg_vertical = slice(z, data_shape[0])      # -z direction
+            tile = dataset[rg_vertical, y, rg_horizontal][::-1, ::-1]
+            
+        else:
+            raise ValueError(f"Unknown view type: {view}")
+        
+        # We may pad to full tile_size here
         return tile
     
     def get_metadata(self) -> Dict:

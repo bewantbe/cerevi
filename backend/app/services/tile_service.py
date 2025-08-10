@@ -22,9 +22,23 @@ class TileService:
         self.default_tile_size = settings.default_tile_size
         
     def generate_image_tile(self, specimen_id: str, view: ViewType, level: int, 
-                           channel: int, z: int, x: int, y: int, 
-                           tile_size: Optional[int] = None) -> bytes:
-        """Generate JPEG tile from image data"""
+                            channel: int, z: int, y: int, x: int, 
+                            tile_size: Optional[int] = None) -> bytes:
+        """Extract tile in JPEG from 3D image data, at origin (z,y,x), with specified tile size.
+        
+        Args:
+            specimen_id: ID of the specimen
+            view: View type (coronal, sagittal, horizontal)
+            level: Resolution level (e.g. 0-7)
+            channel: Channel index (e.g. 0-3)
+            z: Z coordinate (pixel position)
+            y: Y coordinate (pixel position)
+            x: X coordinate (pixel position)
+            tile_size: Size of extracted tile
+            
+        Returns:
+            JPEG image bytes
+        """
         
         if tile_size is None:
             tile_size = self.default_tile_size
@@ -38,23 +52,30 @@ class TileService:
         try:
             with ImarisHandler(image_path) as handler:
                 # Get tile data
-                tile_data = handler.get_tile(view, level, channel, z, x, y, tile_size)
+                tile_data = handler.get_tile(view, level, channel, z, y, x, tile_size)
+                
+                # Apply final vertical flip to match convention of image file
+                tile_flipped = tile_data[::-1, :]
                 
                 # Convert to image
-                image_bytes = self._array_to_image_bytes(tile_data, format='JPEG')
+                image_bytes = self._array_to_image_bytes(tile_flipped, format='JPEG')
                 
-                logger.debug(f"Generated image tile: {specimen_id}/{view}/{level}/{z}/{x}/{y}")
+                logger.debug(f"Generated image tile: {specimen_id}/{view}/{level}/{z}/{y}/{x}")
                 return image_bytes
                 
         except Exception as e:
-            logger.error(f"Failed to generate image tile: {e}")
+            logger.error(f"Failed to extract image tile: {e}")
             raise
     
     def generate_atlas_tile(self, specimen_id: str, view: ViewType, level: int,
-                           z: int, x: int, y: int, 
-                           tile_size: Optional[int] = None) -> bytes:
-        """Generate PNG tile from atlas mask (lossless)"""
-        
+                            z: int, y: int, x: int, 
+                            tile_size: Optional[int] = None) -> bytes:
+        """Extract PNG tile from atlas mask (lossless)"""
+        # TODO: may merge with generate_image_tile
+
+        # Atlas typically has only one channel (channel 0)
+        channel = 0
+
         if tile_size is None:
             tile_size = self.default_tile_size
             
@@ -66,13 +87,12 @@ class TileService:
         
         try:
             with ImarisHandler(atlas_path) as handler:
-                # Atlas typically has only one channel (channel 0)
-                tile_data = handler.get_tile(view, level, 0, z, x, y, tile_size)
+                tile_data = handler.get_tile(view, level, channel, z, y, x, tile_size)
                 
                 # Convert to PNG (lossless) for atlas data
                 image_bytes = self._array_to_image_bytes(tile_data, format='PNG')
                 
-                logger.debug(f"Generated atlas tile: {specimen_id}/{view}/{level}/{z}/{x}/{y}")
+                logger.debug(f"Generated atlas tile: {specimen_id}/{view}/{level}/{z}/{y}/{x}")
                 return image_bytes
                 
         except Exception as e:
@@ -80,7 +100,7 @@ class TileService:
             raise
     
     def get_region_at_coordinate(self, specimen_id: str, view: ViewType, 
-                               x: int, y: int, z: int, level: int = 0) -> int:
+                                 x: int, y: int, z: int, level: int = 0) -> int:
         """Get region ID from atlas at specific coordinate"""
         
         # Get atlas file path
@@ -198,14 +218,9 @@ class TileService:
                 # For float types, assume 0-1 range
                 array = (np.clip(array, 0, 1) * 255).astype(np.uint8)
         
-        # Create PIL Image
+        # Create PIL Image (grayscale)
         if len(array.shape) == 2:
-            # Grayscale image
-            if format == 'PNG' and array.dtype == np.uint8:
-                # For atlas data, preserve exact values
-                image = Image.fromarray(array, mode='L')
-            else:
-                image = Image.fromarray(array, mode='L')
+            image = Image.fromarray(array, mode='L')
         else:
             raise ValueError("Only 2D arrays are supported for tile generation")
         
@@ -216,7 +231,7 @@ class TileService:
             # High quality JPEG for image data
             image.save(buffer, format='JPEG', quality=85, optimize=True)
         elif format == 'PNG':
-            # Lossless PNG for atlas data
+            # Lossless PNG
             image.save(buffer, format='PNG', optimize=True)
         else:
             raise ValueError(f"Unsupported format: {format}")

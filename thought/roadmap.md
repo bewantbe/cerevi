@@ -16,6 +16,7 @@
   - ./scripts/start_services.sh
   - make it rebuild when asked, not always rebuild.
   - done. use docker-compose to start the services.
+* Fixed image tile API - done
 
 ## TODO
 
