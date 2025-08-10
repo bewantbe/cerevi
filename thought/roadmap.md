@@ -18,13 +18,13 @@
   - done. use docker-compose to start the services.
 * Fixed image tile API - done
   - tests - done
+* rename 'generate' to 'extract' for these functions:
+  generate_atlas_tile, generate_image_tile
+  - done
+* imaris_handler.py: class ImarisHandler, change the programing style to RAAI. Also change related calling code.
 
 ## TODO
 
-* rename 'generate' to 'extract' for these functions:
-generate_atlas_tile, generate_image_tile
-
-* imaris_handler.py: class ImarisHandler, change the programing style to RAAI. Also change related calling code.
 
 * add speed benchmark script that test throughtput of image tile API, may include serial mode and parallel mode.
 

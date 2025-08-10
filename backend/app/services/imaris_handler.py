@@ -16,22 +16,11 @@ class ImarisHandler:
     """Handler for Imaris (.ims) HDF5 files"""
     
     def __init__(self, file_path: Union[str, Path]):
-        """Initialize with path to .ims file"""
+        """Initialize with path to .ims file and open it immediately (RAII)"""
         self.file_path = Path(file_path)
-        self._file = None
         self._metadata = None
         
-    def __enter__(self):
-        """Context manager entry"""
-        self.open()
-        return self
-        
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit"""
-        self.close()
-        
-    def open(self):
-        """Open the HDF5 file"""
+        # RAII: Acquire resource in constructor
         if not self.file_path.exists():
             raise FileNotFoundError(f"Imaris file not found: {self.file_path}")
         
@@ -41,23 +30,19 @@ class ImarisHandler:
         except Exception as e:
             logger.error(f"Failed to open Imaris file {self.file_path}: {e}")
             raise
-            
-    def close(self):
-        """Close the HDF5 file"""
+        
+    def __enter__(self):
+        """Context manager entry - file already open"""
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit - close the file"""
         if self._file:
             self._file.close()
             self._file = None
-            
-    @property
-    def is_open(self) -> bool:
-        """Check if file is open"""
-        return self._file is not None
         
     def get_resolution_levels(self) -> List[int]:
         """Get available resolution levels"""
-        if not self.is_open:
-            raise RuntimeError("File not open")
-            
         levels = []
         dataset_group = self._file.get('DataSet')
         if dataset_group:
@@ -70,9 +55,6 @@ class ImarisHandler:
     
     def get_channels(self) -> List[int]:
         """Get available channels"""
-        if not self.is_open:
-            raise RuntimeError("File not open")
-            
         channels = []
         # Check first resolution level for available channels
         levels = self.get_resolution_levels()
@@ -87,9 +69,6 @@ class ImarisHandler:
     
     def get_data_shape(self, level: int, channel: int = 0) -> Tuple[int, int, int]:
         """Get shape of data array for specific level and channel"""
-        if not self.is_open:
-            raise RuntimeError("File not open")
-            
         try:
             dataset_path = f'DataSet/ResolutionLevel {level}/TimePoint 0/Channel {channel}/Data'
             dataset = self._file[dataset_path]
@@ -115,9 +94,6 @@ class ImarisHandler:
             
         Note: Coordinates (z,y,x) specify the origin (top-left corner) of the tile.
         """
-        if not self.is_open:
-            raise RuntimeError("File not open")
-            
         dataset_path = f'DataSet/ResolutionLevel {level}/TimePoint 0/Channel {channel}/Data'
         dataset = self._file[dataset_path]
         
@@ -150,9 +126,6 @@ class ImarisHandler:
     
     def get_metadata(self) -> Dict:
         """Extract metadata from the file"""
-        if not self.is_open:
-            raise RuntimeError("File not open")
-            
         if self._metadata is None:
             metadata = {
                 "file_path": str(self.file_path),
@@ -188,9 +161,6 @@ class ImarisHandler:
     
     def get_histogram(self, level: int, channel: int) -> Optional[np.ndarray]:
         """Get histogram data for a specific level and channel"""
-        if not self.is_open:
-            raise RuntimeError("File not open")
-            
         try:
             hist_path = f'DataSet/ResolutionLevel {level}/TimePoint 0/Channel {channel}/Histogram'
             histogram = self._file[hist_path]
@@ -202,9 +172,6 @@ class ImarisHandler:
     def get_pixel_value_at_coordinate(self, level: int, channel: int, 
                                     x: int, y: int, z: int) -> Union[int, float]:
         """Get pixel value at specific 3D coordinate"""
-        if not self.is_open:
-            raise RuntimeError("File not open")
-            
         try:
             dataset_path = f'DataSet/ResolutionLevel {level}/TimePoint 0/Channel {channel}/Data'
             dataset = self._file[dataset_path]
@@ -222,9 +189,6 @@ class ImarisHandler:
     def calculate_tile_grid_size(self, view: ViewType, level: int, 
                                 tile_size: int = 512) -> Tuple[int, int]:
         """Calculate number of tiles needed in each dimension"""
-        if not self.is_open:
-            raise RuntimeError("File not open")
-            
         # Get shape for any channel (they should be the same)
         channels = self.get_channels()
         if not channels:
