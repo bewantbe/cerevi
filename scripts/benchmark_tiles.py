@@ -26,9 +26,25 @@ import time
 from dataclasses import dataclass
 from typing import List, Tuple, Optional
 from urllib.parse import urlencode
-from urllib.request import urlopen, Request
-from urllib.error import URLError, HTTPError
+import requests
+from requests.adapters import HTTPAdapter
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# HTTP session pooling for client
+thread_local = threading.local()
+POOL_MAXSIZE = 64
+
+def get_session() -> requests.Session:
+    if not hasattr(thread_local, "session"):
+        s = requests.Session()
+        adapter = HTTPAdapter(
+            pool_connections=POOL_MAXSIZE, pool_maxsize=POOL_MAXSIZE, max_retries=0
+        )
+        s.mount("http://", adapter)
+        s.mount("https://", adapter)
+        thread_local.session = s
+    return thread_local.session
 
 
 @dataclass
@@ -46,35 +62,38 @@ class FetchResult:
     latency_s: float
     status: Optional[int]
     error: Optional[str]
+    backend_ms: Optional[float] = None
 
 
 def http_get_json(url: str, timeout: float = 10.0) -> dict:
-    req = Request(url, headers={"Accept": "application/json"})
-    with urlopen(req, timeout=timeout) as resp:
-        data = resp.read()
-    return json.loads(data.decode("utf-8"))
+    r = requests.get(url, headers={"Accept": "application/json"}, timeout=(timeout, timeout))
+    r.raise_for_status()
+    return r.json()
 
 
-def http_get_bytes(url: str, timeout: float = 10.0) -> Tuple[int, Optional[int]]:
+def http_get_bytes(url: str, timeout: float = 10.0) -> Tuple[int, Optional[int], Optional[float]]:
     """
-    Returns (bytes_read, status_code). Reads full body to measure throughput.
+    Returns (bytes_read, status_code, backend_ms). Reads full body to measure throughput.
     """
-    req = Request(url, headers={"Accept": "image/*"})
+    sess = get_session()
     try:
-        t0 = time.perf_counter()
-        with urlopen(req, timeout=timeout) as resp:
-            status = getattr(resp, "status", 200)  # Py3.9+: HTTPResponse.status
-            body = resp.read()  # ensure full download
-        # Some servers include Content-Length; length(body) is authoritative after read.
-        return len(body), status
-    except HTTPError as e:
-        # Read and discard error body if any
+        resp = sess.get(
+            url,
+            headers={"Accept": "image/*", "Connection": "keep-alive"},
+            timeout=(timeout, timeout),
+            stream=False,
+        )
+        status = resp.status_code
+        body = resp.content  # ensure full download
+        backend_ms: Optional[float] = None
         try:
-            _ = e.read()
+            val = resp.headers.get("X-Backend-Time", None)
+            if val is not None:
+                backend_ms = float(val)
         except Exception:
-            pass
-        raise
-    except URLError:
+            backend_ms = None
+        return len(body), status, backend_ms
+    except requests.RequestException:
         raise
 
 
@@ -165,17 +184,17 @@ def fetch_one(url: str, timeout: float, retries: int) -> FetchResult:
     for attempt in range(retries + 1):
         t0 = time.perf_counter()
         try:
-            nbytes, status = http_get_bytes(url, timeout=timeout)
+            nbytes, status, backend_ms = http_get_bytes(url, timeout=timeout)
             t1 = time.perf_counter()
             if 200 <= (status or 0) < 300:
-                return FetchResult(True, nbytes, t1 - t0, status, None)
+                return FetchResult(True, nbytes, t1 - t0, status, None, backend_ms)
             else:
-                return FetchResult(False, 0, t1 - t0, status, f"HTTP {status}")
+                return FetchResult(False, 0, t1 - t0, status, f"HTTP {status}", backend_ms)
         except Exception as e:
             last_err = str(e)
             # simple backoff
             time.sleep(0.05 * (attempt + 1))
-    return FetchResult(False, 0, 0.0, None, last_err)
+    return FetchResult(False, 0, 0.0, None, last_err, None)
 
 
 def run_serial(warmup_urls: List[str], measured_urls: List[str], timeout: float, retries: int, progress_every: int) -> Tuple[List[FetchResult], float]:
@@ -266,6 +285,10 @@ def main():
     parser.add_argument("--progress-every", type=int, default=100, help="Print progress every N completed tiles")
     args = parser.parse_args()
 
+    # Configure HTTP pool size based on desired concurrency
+    global POOL_MAXSIZE
+    POOL_MAXSIZE = max(8, args.concurrency * 2)
+
     # Discover grid info
     grid = fetch_grid_info(args.api_base, args.specimen, args.view, args.level, args.timeout)
     tile_size = args.tile_size if args.tile_size and args.tile_size > 0 else grid.tile_size
@@ -319,6 +342,10 @@ def main():
     p50 = percentile([l * 1000.0 for l in latencies], 50)
     p90 = percentile([l * 1000.0 for l in latencies], 90)
     p99 = percentile([l * 1000.0 for l in latencies], 99)
+    server_times_ms = [r.backend_ms for r in ok_results if r.backend_ms is not None]
+    sp50 = percentile(server_times_ms, 50) if server_times_ms else 0.0
+    sp90 = percentile(server_times_ms, 90) if server_times_ms else 0.0
+    sp99 = percentile(server_times_ms, 99) if server_times_ms else 0.0
 
     # Summary
     print("Benchmark summary")
@@ -330,6 +357,8 @@ def main():
     print(f"- Bytes: {bytes_total} ({human_mb(bytes_total):.2f} MB)")
     print(f"- Time: {wall_time:.3f} s, Tiles/s: {tiles_s:.2f}, MB/s: {mbs:.2f}")
     print(f"- Latency p50: {p50:.1f} ms, p90: {p90:.1f} ms, p99: {p99:.1f} ms")
+    if server_times_ms:
+        print(f"- Server time p50: {sp50:.1f} ms, p90: {sp90:.1f} ms, p99: {sp99:.1f} ms")
 
     # CSV-friendly line
     print(

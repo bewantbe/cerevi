@@ -5,7 +5,9 @@ API endpoints for image tiles
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Query, Path
 from fastapi.responses import Response
+from fastapi.concurrency import run_in_threadpool
 import logging
+import time
 
 from ..models.specimen import ViewType
 from ..services.tile_service import TileService
@@ -39,8 +41,10 @@ async def get_image_tile(
         raise HTTPException(status_code=404, detail=f"Specimen {specimen_id} not found")
     
     try:
-        # Extract tile
-        tile_bytes = tile_service.extract_image_tile(
+        t0 = time.perf_counter()
+        # Extract tile (offload blocking work to threadpool to avoid blocking event loop)
+        tile_bytes = await run_in_threadpool(
+            tile_service.extract_image_tile,
             specimen_id=specimen_id,
             view=view,
             level=level,
@@ -50,6 +54,7 @@ async def get_image_tile(
             x=x,
             tile_size=tile_size
         )
+        dt_ms = (time.perf_counter() - t0) * 1000.0
         
         # Return image response
         return Response(
@@ -57,7 +62,9 @@ async def get_image_tile(
             media_type="image/jpeg",
             headers={
                 "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
-                "X-Tile-Info": f"{specimen_id}/{view}/{level}/{z}/{y}/{x}/ch{channel}"
+                "X-Tile-Info": f"{specimen_id}/{view}/{level}/{z}/{y}/{x}/ch{channel}",
+                "X-Backend-Time": f"{dt_ms:.3f}",
+                "Server-Timing": f"backend;dur={dt_ms:.3f}"
             }
         )
         
@@ -102,8 +109,10 @@ async def get_atlas_tile(
         raise HTTPException(status_code=404, detail=f"Specimen {specimen_id} not found")
     
     try:
-        # Extract atlas tile
-        tile_bytes = tile_service.extract_atlas_tile(
+        t0 = time.perf_counter()
+        # Extract atlas tile (offload blocking work to threadpool)
+        tile_bytes = await run_in_threadpool(
+            tile_service.extract_atlas_tile,
             specimen_id=specimen_id,
             view=view,
             level=level,
@@ -112,6 +121,7 @@ async def get_atlas_tile(
             x=x,
             tile_size=tile_size
         )
+        dt_ms = (time.perf_counter() - t0) * 1000.0
         
         # Return PNG response (lossless for atlas data)
         return Response(
@@ -119,7 +129,9 @@ async def get_atlas_tile(
             media_type="image/png",
             headers={
                 "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
-                "X-Atlas-Info": f"{specimen_id}/{view}/{level}/{z}/{y}/{x}"
+                "X-Atlas-Info": f"{specimen_id}/{view}/{level}/{z}/{y}/{x}",
+                "X-Backend-Time": f"{dt_ms:.3f}",
+                "Server-Timing": f"backend;dur={dt_ms:.3f}"
             }
         )
         
