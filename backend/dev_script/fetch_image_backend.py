@@ -147,3 +147,67 @@ def main():
 
 if __name__ == "__main__":
     exit(main())
+
+"""
+$ docker compose exec backend dev_script/fetch_image_backend.py 
+WARN[0000] /home/xyy/SIAT_CAS/visor_platform/code/cerevi/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+Fetching image tile using backend TileService...
+Parameters: specimen=macaque_brain_rm009, view=ViewType.CORONAL, level=4, channel=0, z=256, y=0, x=0
+
+Raw Tile Pixel Statistics (before JPEG conversion):
+  Mean: 268.06
+  Std:  268.57
+  Min:  0.00
+  Max:  1727.00
+  Shape: (384, 448)
+  Dtype: uint16
+  Tile extraction time: 0.140 seconds
+✓ Image saved successfully: /app/dev_script/image_backend_macaque_brain_rm009_ViewType.CORONAL_l4_c0_z256_y0_x0.jpg
+  Image size: 17855 bytes
+tile_service.get_image_info(specimen_id)
+  Image dimensions: (7296, 6016, 7040)
+  Available channels: ['0', '1', '2', '3']
+  Resolution levels: [0, 1, 2, 3, 4, 5, 6, 7]
+
+==================================================
+
+Fetching image tile using backend TileService...
+Parameters: specimen=macaque_brain_rm009, view=ViewType.SAGITTAL, level=4, channel=0, z=0, y=0, x=224
+
+Raw Tile Pixel Statistics (before JPEG conversion):
+  Mean: 285.13
+  Std:  495.65
+  Min:  0.00
+  Max:  6026.00
+  Shape: (384, 512)
+  Dtype: uint16
+  Tile extraction time: 0.079 seconds
+✓ Image saved successfully: /app/dev_script/image_backend_macaque_brain_rm009_ViewType.SAGITTAL_l4_c0_z0_y0_x224.jpg
+  Image size: 15193 bytes
+tile_service.get_image_info(specimen_id)
+  Image dimensions: (7296, 6016, 7040)
+  Available channels: ['0', '1', '2', '3']
+  Resolution levels: [0, 1, 2, 3, 4, 5, 6, 7]
+
+==================================================
+
+Fetching image tile using backend TileService...
+Parameters: specimen=macaque_brain_rm009, view=ViewType.HORIZONTAL, level=4, channel=0, z=0, y=192, x=0
+
+Raw Tile Pixel Statistics (before JPEG conversion):
+  Mean: 341.03
+  Std:  436.68
+  Min:  0.00
+  Max:  6287.00
+  Shape: (512, 448)
+  Dtype: uint16
+  Tile extraction time: 0.090 seconds
+✓ Image saved successfully: /app/dev_script/image_backend_macaque_brain_rm009_ViewType.HORIZONTAL_l4_c0_z0_y192_x0.jpg
+  Image size: 16839 bytes
+tile_service.get_image_info(specimen_id)
+  Image dimensions: (7296, 6016, 7040)
+  Available channels: ['0', '1', '2', '3']
+  Resolution levels: [0, 1, 2, 3, 4, 5, 6, 7]
+
+==================================================
+"""
