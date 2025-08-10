@@ -20,7 +20,7 @@ from app.config import settings
 import time
 
 def read_save_ims_backend(specimen_id, view, level, channel, z, y, x, tile_size):
-    """Generate and save image tile using backend TileService (matching h5py parameters)"""
+    """Extract and save image tile using backend TileService (matching h5py parameters)"""
     print(f"Fetching image tile using backend TileService...")
     print(f"Parameters: specimen={specimen_id}, view={view}, level={level}, channel={channel}, z={z}, y={y}, x={x}")
     
@@ -48,9 +48,9 @@ def read_save_ims_backend(specimen_id, view, level, channel, z, y, x, tile_size)
         print(f"  Shape: {tile_flipped.shape}")
         print(f"  Dtype: {tile_flipped.dtype}")
         
-        # Generate image tile (same as API endpoint but with tile_size parameter)
+        # Extract image tile (same as API endpoint but with tile_size parameter)
         start_time = time.time()
-        image_bytes = tile_service.generate_image_tile(
+        image_bytes = tile_service.extract_image_tile(
             specimen_id=specimen_id,
             view=view,
             level=level,
@@ -61,7 +61,7 @@ def read_save_ims_backend(specimen_id, view, level, channel, z, y, x, tile_size)
             tile_size=tile_size
         )
         elapsed_time = time.time() - start_time
-        print(f"  Tile generation time: {elapsed_time:.3f} seconds")
+        print(f"  Tile extraction time: {elapsed_time:.3f} seconds")
         
         # Save to file with same naming convention as h5py
         output_path = Path(__file__).parent / f"image_backend_{specimen_id}_{view}_l{level}_c{channel}_z{z}_y{y}_x{x}.jpg"
@@ -90,7 +90,7 @@ def read_save_ims_backend(specimen_id, view, level, channel, z, y, x, tile_size)
     return 0
 
 def main():
-    """Generate and save image tile using backend TileService"""
+    """Extract and save image tile using backend TileService"""
     
     # Parameters matching the h5py implementation
     params = [

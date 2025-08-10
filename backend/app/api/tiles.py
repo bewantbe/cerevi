@@ -39,8 +39,8 @@ async def get_image_tile(
         raise HTTPException(status_code=404, detail=f"Specimen {specimen_id} not found")
     
     try:
-        # Generate tile
-        tile_bytes = tile_service.generate_image_tile(
+        # Extract tile
+        tile_bytes = tile_service.extract_image_tile(
             specimen_id=specimen_id,
             view=view,
             level=level,
@@ -66,8 +66,8 @@ async def get_image_tile(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Failed to generate image tile: {e}")
-        raise HTTPException(status_code=500, detail="Failed to generate tile")
+        logger.error(f"Failed to extract image tile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to extract tile")
 
 @router.get("/specimens/{specimen_id}/atlas/{view}/{level}/{z}/{y}/{x}")
 async def get_atlas_tile(
@@ -95,8 +95,8 @@ async def get_atlas_tile(
         raise HTTPException(status_code=404, detail=f"Specimen {specimen_id} not found")
     
     try:
-        # Generate atlas tile
-        tile_bytes = tile_service.generate_atlas_tile(
+        # Extract atlas tile
+        tile_bytes = tile_service.extract_atlas_tile(
             specimen_id=specimen_id,
             view=view,
             level=level,
@@ -121,8 +121,8 @@ async def get_atlas_tile(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Failed to generate atlas tile: {e}")
-        raise HTTPException(status_code=500, detail="Failed to generate atlas tile")
+        logger.error(f"Failed to extract atlas tile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to extract atlas tile")
 
 @router.get("/specimens/{specimen_id}/tile-grid/{view}/{level}")
 async def get_tile_grid_info(

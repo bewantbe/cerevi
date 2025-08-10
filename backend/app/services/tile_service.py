@@ -21,7 +21,7 @@ class TileService:
     def __init__(self):
         self.default_tile_size = settings.default_tile_size
         
-    def generate_image_tile(self, specimen_id: str, view: ViewType, level: int, 
+    def extract_image_tile(self, specimen_id: str, view: ViewType, level: int, 
                             channel: int, z: int, y: int, x: int, 
                             tile_size: Optional[int] = None) -> bytes:
         """Extract tile in JPEG from 3D image data, at origin (z,y,x), with specified tile size.
@@ -60,18 +60,18 @@ class TileService:
                 # Convert to image
                 image_bytes = self._array_to_image_bytes(tile_flipped, format='JPEG')
                 
-                logger.debug(f"Generated image tile: {specimen_id}/{view}/{level}/{z}/{y}/{x}")
+                logger.debug(f"Extracted image tile: {specimen_id}/{view}/{level}/{z}/{y}/{x}")
                 return image_bytes
                 
         except Exception as e:
             logger.error(f"Failed to extract image tile: {e}")
             raise
     
-    def generate_atlas_tile(self, specimen_id: str, view: ViewType, level: int,
+    def extract_atlas_tile(self, specimen_id: str, view: ViewType, level: int,
                             z: int, y: int, x: int, 
                             tile_size: Optional[int] = None) -> bytes:
         """Extract PNG tile from atlas mask (lossless)"""
-        # TODO: may merge with generate_image_tile
+        # TODO: may merge with extract_image_tile
 
         # Atlas typically has only one channel (channel 0)
         channel = 0
@@ -92,11 +92,11 @@ class TileService:
                 # Convert to PNG (lossless) for atlas data
                 image_bytes = self._array_to_image_bytes(tile_data, format='PNG')
                 
-                logger.debug(f"Generated atlas tile: {specimen_id}/{view}/{level}/{z}/{y}/{x}")
+                logger.debug(f"Extracted atlas tile: {specimen_id}/{view}/{level}/{z}/{y}/{x}")
                 return image_bytes
                 
         except Exception as e:
-            logger.error(f"Failed to generate atlas tile: {e}")
+            logger.error(f"Failed to extract atlas tile: {e}")
             raise
     
     def get_region_at_coordinate(self, specimen_id: str, view: ViewType, 

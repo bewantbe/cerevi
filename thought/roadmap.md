@@ -21,14 +21,15 @@
 
 ## TODO
 
-* tiles.py: get_image_tile(), get_atlas_tile() has parameter order z,y,x instead of z,x,y now. and API definition changed also.
-Fix frontend code accordingly.
+* rename 'generate' to 'extract' for these functions:
+generate_atlas_tile, generate_image_tile
 
 * imaris_handler.py: class ImarisHandler, change the programing style to RAAI. Also change related calling code.
 
-* rename generate to extract for these functions:
-generate_atlas_tile, generate_image_tile
+* add speed benchmark script that test throughtput of image tile API, may include serial mode and parallel mode.
 
+* tiles.py: get_image_tile(), get_atlas_tile() has parameter order z,y,x instead of z,x,y now. and API definition changed also.
+Fix frontend code accordingly.
 
 * "axes_order": "z_y_x" -> "zyx"
 
