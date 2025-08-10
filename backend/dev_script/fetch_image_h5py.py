@@ -51,7 +51,7 @@ def array_to_image_bytes(array, format='JPEG'):
     return buffer.getvalue()
 
 def read_save_ims(specimen_id, view, level, channel, z, y, x, tile_size):
-    print(f"Fetching image tile using h5py directly...")
+    print(f"\n##### Fetching image tile using h5py directly #####")
     print(f"Parameters: specimen={specimen_id}, view={view}, level={level}, channel={channel}, z={z}, y={y}, x={x}")
     
     # Construct file path based on backend config logic
@@ -127,7 +127,7 @@ def read_save_ims(specimen_id, view, level, channel, z, y, x, tile_size):
         print(f"Tile generation time: {elapsed_time:.3f} seconds")
         
         # Calculate and display pixel statistics
-        print(f"\nPixel Statistics:")
+        print(f"Pixel Statistics (raw pixel value):")
         print(f"  Mean: {np.mean(tile):.2f}")
         print(f"  Std:  {np.std(tile):.2f}")
         print(f"  Min:  {np.min(tile):.2f}")
@@ -142,6 +142,13 @@ def read_save_ims(specimen_id, view, level, channel, z, y, x, tile_size):
             f.write(image_bytes)
         print(f"Image saved successfully: {output_path}")
         print(f"Image size: {len(image_bytes)} bytes")
+
+        img_jpg = Image.open(io.BytesIO(image_bytes))
+        print(f"Pixel Statistics (after normalization and decode):")
+        print(f"  Mean: {np.mean(np.array(img_jpg)):.2f}")
+        print(f"  Std:  {np.std(np.array(img_jpg)):.2f}")
+        print(f"  Min:  {np.min(np.array(img_jpg)):.2f}")
+        print(f"  Max:  {np.max(np.array(img_jpg)):.2f}")
         
 def main():
     """Generate and save image tile using h5py directly"""
@@ -193,10 +200,90 @@ def main():
     
     #read_save_ims(**params[3])
 
-    for pm in params[:-1]:
+    for pm in params:
         read_save_ims(**pm)
 
     return 0
 
 if __name__ == "__main__":
     exit(main())
+
+"""
+$ docker-compose exec backend python dev_script/fetch_image_h5py.py
+
+##### Fetching image tile using h5py directly #####
+Parameters: specimen=macaque_brain_rm009, view=coronal, level=4, channel=0, z=256, y=0, x=0
+Image file path: /app/data/specimens/macaque_brain_rm009/image.ims
+Dataset path: DataSet/ResolutionLevel 4/TimePoint 0/Channel 0/Data
+Dataset shape: (512, 384, 448) (z, y, x)
+Dataset dtype: uint16
+Tile shape: (384, 448)
+WARNING: dimension mismatch, tile_size = 512.
+Tile generation time: 0.153 seconds
+Pixel Statistics (raw pixel value):
+  Mean: 268.06
+  Std:  268.57
+  Min:  0.00
+  Max:  1727.00
+Image saved successfully: /app/dev_script/image_h5py_macaque_brain_rm009_coronal_l4_c0_z256_y0_x0.jpg
+Image size: 17855 bytes
+Pixel Statistics (after normalization and decode):
+  Mean: 39.27
+  Std:  39.47
+  Min:  0.00
+  Max:  255.00
+
+##### Fetching image tile using h5py directly #####
+Parameters: specimen=macaque_brain_rm009, view=sagittal, level=4, channel=0, z=0, y=0, x=224
+Image file path: /app/data/specimens/macaque_brain_rm009/image.ims
+Dataset path: DataSet/ResolutionLevel 4/TimePoint 0/Channel 0/Data
+Dataset shape: (512, 384, 448) (z, y, x)
+Dataset dtype: uint16
+Tile shape: (384, 512)
+WARNING: dimension mismatch, tile_size = 512.
+Tile generation time: 0.077 seconds
+Pixel Statistics (raw pixel value):
+  Mean: 285.13
+  Std:  495.65
+  Min:  0.00
+  Max:  6026.00
+Image saved successfully: /app/dev_script/image_h5py_macaque_brain_rm009_sagittal_l4_c0_z0_y0_x224.jpg
+Image size: 15193 bytes
+Pixel Statistics (after normalization and decode):
+  Mean: 11.79
+  Std:  20.88
+  Min:  0.00
+  Max:  255.00
+
+##### Fetching image tile using h5py directly #####
+Parameters: specimen=macaque_brain_rm009, view=horizontal, level=4, channel=0, z=0, y=192, x=0
+Image file path: /app/data/specimens/macaque_brain_rm009/image.ims
+Dataset path: DataSet/ResolutionLevel 4/TimePoint 0/Channel 0/Data
+Dataset shape: (512, 384, 448) (z, y, x)
+Dataset dtype: uint16
+Tile shape: (512, 448)
+WARNING: dimension mismatch, tile_size = 512.
+Tile generation time: 0.095 seconds
+Pixel Statistics (raw pixel value):
+  Mean: 341.03
+  Std:  436.68
+  Min:  0.00
+  Max:  6287.00
+Image saved successfully: /app/dev_script/image_h5py_macaque_brain_rm009_horizontal_l4_c0_z0_y192_x0.jpg
+Image size: 16839 bytes
+Pixel Statistics (after normalization and decode):
+  Mean: 13.52
+  Std:  17.57
+  Min:  0.00
+  Max:  255.00
+
+##### Fetching image tile using h5py directly #####
+Parameters: specimen=macaque_brain_rm009, view=coronal, level=0, channel=0, z=3200, y=3200, x=3200
+Image file path: /app/data/specimens/macaque_brain_rm009/image.ims
+Dataset path: DataSet/ResolutionLevel 0/TimePoint 0/Channel 0/Data
+Dataset shape: (7296, 6016, 7040) (z, y, x)
+Dataset dtype: uint16
+Tile shape: (512, 512)
+Tile generation time: 0.339 seconds
+Pixel Statistics (raw pixel value):
+"""

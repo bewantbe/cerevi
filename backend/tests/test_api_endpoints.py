@@ -8,6 +8,9 @@ Based on the API specification from BACKEND_COMPLETE.md
 import sys
 import os
 import pytest
+import numpy as np
+from PIL import Image
+import io
 from fastapi.testclient import TestClient
 
 # Add backend to Python path
@@ -265,58 +268,111 @@ class TestMetadataEndpoints:
         assert "not found" in data["detail"].lower()
 
 class TestImageEndpoints:
-    """Tests for image tile endpoints"""
+    """Tests for image tile endpoints with critical pixel statistics validation"""
     
-    def test_get_image_tile(self, client):
-        """Test GET /api/specimens/{id}/image/{view}/{level}/{z}/{x}/{y}"""
+    @pytest.mark.parametrize("test_case", [
+        {
+            "name": "coronal_level4",
+            "view": "coronal", "level": 4, "z": 256, "y": 0, "x": 0, "channel": 0,
+            "expected_mean": 39.27, "expected_std": 39.47, "expected_size_range": (15000, 20000),
+            "expected_shape_approx": (384, 448)  # Non-square due to data bounds
+        },
+        {
+            "name": "sagittal_level4", 
+            "view": "sagittal", "level": 4, "z": 0, "y": 0, "x": 224, "channel": 0,
+            "expected_mean": 11.79, "expected_std": 20.88, "expected_size_range": (13000, 18000),
+            "expected_shape_approx": (384, 512)
+        },
+        {
+            "name": "horizontal_level4",
+            "view": "horizontal", "level": 4, "z": 0, "y": 192, "x": 0, "channel": 0,
+            "expected_mean": 13.52, "expected_std": 17.57, "expected_size_range": (14000, 19000),
+            "expected_shape_approx": (512, 448)
+        },
+        {
+            "name": "coronal_level0_highres",
+            "view": "coronal", "level": 0, "z": 3200, "y": 3200, "x": 3200, "channel": 0,
+            "expected_mean": None, "expected_std": None, "expected_size_range": (10000, 50000),
+            "expected_shape_approx": (512, 512)  # Full tile size for high-res
+        }
+    ])
+    def test_image_api_with_critical_statistics(self, client, test_case):
+        """Test image API with expected pixel statistics and dimensions from dev script"""
         specimen_id = "macaque_brain_rm009"
-        view = "sagittal"
-        level = 0
-        z, x, y = 0, 0, 0
         
-        response = client.get(f"/api/specimens/{specimen_id}/image/{view}/{level}/{z}/{x}/{y}")
+        # Build API endpoint URL
+        url = (f"/api/specimens/{specimen_id}/image/{test_case['view']}/"
+               f"{test_case['level']}/{test_case['z']}/{test_case['y']}/{test_case['x']}")
+        if test_case['channel'] != 0:
+            url += f"?channel={test_case['channel']}"
         
-        # Check if image file exists - if not, should return 404
-        if response.status_code == 200:
-            # Verify response headers
-            assert response.headers["content-type"] == "image/jpeg"
-            assert "Cache-Control" in response.headers
-            assert "public" in response.headers["Cache-Control"]
-            assert "max-age" in response.headers["Cache-Control"]
-            assert "X-Tile-Info" in response.headers
-            
-            # Verify response content
-            assert len(response.content) > 0
-            # Check for JPEG magic bytes (FF D8)
-            assert response.content[:2] == b'\xff\xd8'
-            
-        elif response.status_code == 404:
-            # Image file not found - this is a warning in test environment
+        response = client.get(url)
+        
+        # Skip if image file not available in test environment
+        if response.status_code == 404:
             data = response.json()
-            assert "detail" in data
-            pytest.skip(f"Image file not found for specimen {specimen_id}: {data['detail']}")
-        else:
-            pytest.fail(f"Unexpected status code: {response.status_code}")
-    
-    def test_get_image_tile_with_parameters(self, client):
-        """Test image tile with various parameters"""
-        specimen_id = "macaque_brain_rm009"
+            pytest.skip(f"Image file not found for {test_case['name']}: {data['detail']}")
         
-        # Test different views
-        for view in ["sagittal", "coronal", "horizontal"]:
-            response = client.get(f"/api/specimens/{specimen_id}/image/{view}/0/0/0/0")
-            assert response.status_code in [200, 404]  # 404 acceptable if file missing
+        # Verify successful response
+        assert response.status_code == 200, f"Failed for test case: {test_case['name']}"
+        
+        # Verify response headers
+        assert response.headers["content-type"] == "image/jpeg"
+        assert "Cache-Control" in response.headers
+        assert "X-Tile-Info" in response.headers
+        
+        # Verify JPEG format
+        assert len(response.content) > 0
+        assert response.content[:2] == b'\xff\xd8', "Not a valid JPEG file"
+        
+        # Verify image size is in expected range
+        size_min, size_max = test_case['expected_size_range']
+        actual_size = len(response.content)
+        assert size_min <= actual_size <= size_max, \
+            f"Image size {actual_size} not in expected range [{size_min}, {size_max}] for {test_case['name']}"
+        
+        # Decode JPEG and validate pixel statistics
+        try:
+            image = Image.open(io.BytesIO(response.content))
+            pixels = np.array(image)
             
-            if response.status_code == 200:
-                assert response.headers["content-type"] == "image/jpeg"
-        
-        # Test with channel parameter
-        response = client.get(f"/api/specimens/{specimen_id}/image/sagittal/0/0/0/0?channel=1")
-        assert response.status_code in [200, 404]
-        
-        # Test with tile_size parameter
-        response = client.get(f"/api/specimens/{specimen_id}/image/sagittal/0/0/0/0?tile_size=256")
-        assert response.status_code in [200, 404]
+            # Validate image dimensions
+            expected_height, expected_width = test_case['expected_shape_approx']
+            actual_height, actual_width = pixels.shape
+            
+            # Require exact dimension match
+            assert actual_height == expected_height, \
+                f"Height mismatch for {test_case['name']}: expected {expected_height}, got {actual_height}"
+            assert actual_width == expected_width, \
+                f"Width mismatch for {test_case['name']}: expected {expected_width}, got {actual_width}"
+            
+            # Validate pixel range (proper normalization)
+            assert pixels.min() >= 0, f"Pixel values below 0 for {test_case['name']}"
+            assert pixels.max() <= 255, f"Pixel values above 255 for {test_case['name']}"
+            assert pixels.dtype == np.uint8, f"Wrong pixel data type for {test_case['name']}"
+            
+            # Validate pixel statistics (if expected values provided)
+            if test_case['expected_mean'] is not None:
+                actual_mean = np.mean(pixels)
+                expected_mean = test_case['expected_mean']
+                tolerance = 0.01 * expected_mean  # ±1% tolerance
+                
+                assert abs(actual_mean - expected_mean) <= tolerance, \
+                    f"Mean mismatch for {test_case['name']}: expected {expected_mean:.2f} ±{tolerance:.2f}, got {actual_mean:.2f}"
+            
+            if test_case['expected_std'] is not None:
+                actual_std = np.std(pixels)
+                expected_std = test_case['expected_std']
+                tolerance = 0.01 * expected_std  # ±1% tolerance
+                
+                assert abs(actual_std - expected_std) <= tolerance, \
+                    f"Std mismatch for {test_case['name']}: expected {expected_std:.2f} ±{tolerance:.2f}, got {actual_std:.2f}"
+            
+            # Ensure image is not blank (has some variation)
+            assert np.std(pixels) > 1.0, f"Image appears blank for {test_case['name']}"
+            
+        except Exception as e:
+            pytest.fail(f"Failed to decode or validate image for {test_case['name']}: {e}")
     
     def test_get_image_tile_invalid_specimen(self, client):
         """Test image tile with invalid specimen ID"""

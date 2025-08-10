@@ -107,6 +107,9 @@ curl http://localhost:8000/api/specimens/macaque_brain_rm009/regions
 curl -X POST http://localhost:8000/api/specimens/macaque_brain_rm009/pick-region \
   -H "Content-Type: application/json" \
   -d '{"x": 100, "y": 200, "z": 50, "view": "sagittal", "level": 3}'
+
+# Test reading images
+curl -o tmp/image_tile.jpg "http://localhost:8000/api/specimens/macaque_brain_rm009/image/coronal/4/256/0/0"
 ```
 
 With pytest

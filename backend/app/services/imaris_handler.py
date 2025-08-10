@@ -131,20 +131,17 @@ class ImarisHandler:
 
         # Extract slice based on view type with same logic as h5py implementation
         if view == ViewType.CORONAL:
-            rg_vertical = slice(y, data_shape[1])      # -y direction
-            rg_horizontal = slice(x, data_shape[2])    # -x direction
+            rg_horizontal = slice(x, x + tile_size)    # -x direction
+            rg_vertical = slice(y, y + tile_size)      # -y direction
             tile = dataset[z, rg_vertical, rg_horizontal][::-1, ::-1]
-            
         elif view == ViewType.SAGITTAL:
-            rg_horizontal = slice(z, data_shape[0])    #  z direction
-            rg_vertical = slice(y, data_shape[1])      # -y direction
+            rg_horizontal = slice(z, z + tile_size)    #  z direction
+            rg_vertical = slice(y, y + tile_size)      # -y direction
             tile = dataset[rg_horizontal, rg_vertical, x][:, ::-1].T
-            
         elif view == ViewType.HORIZONTAL:
-            rg_horizontal = slice(x, data_shape[2])    # -x direction
-            rg_vertical = slice(z, data_shape[0])      # -z direction
+            rg_horizontal = slice(x, x + tile_size)    # -x direction
+            rg_vertical = slice(z, z + tile_size)      # -z direction
             tile = dataset[rg_vertical, y, rg_horizontal][::-1, ::-1]
-            
         else:
             raise ValueError(f"Unknown view type: {view}")
         

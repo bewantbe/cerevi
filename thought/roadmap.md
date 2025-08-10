@@ -17,16 +17,17 @@
   - make it rebuild when asked, not always rebuild.
   - done. use docker-compose to start the services.
 * Fixed image tile API - done
+  - tests - done
 
 ## TODO
+
+* /docs: Specimen ID no options, View type no options.
+* "axes_order": "z_y_x" -> "zyx"
 
 * Check the API tests
     Too complecated, remove the asserts or tests that are not essential.
     Is `TestSpecimenEndpointsCoverage` a bit redundant?
     Check the returned image is not completely black.
-
-* /docs: Specimen ID no options, View type no options.
-* "axes_order": "z_y_x" -> "zyx"
 
 ## possible future tasks
 
