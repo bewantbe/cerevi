@@ -21,12 +21,12 @@ tile_service = TileService()
 async def get_image_tile(
     specimen_id: str = Path(..., description="Specimen ID"),
     view: ViewType = Path(..., description="View type (sagittal, coronal, horizontal)"),
-    level: int = Path(..., ge=0, le=7, description="Resolution level (e.g. 0-7)"),
+    level: int = Path(..., ge=0, le=99, description="Resolution level (e.g. 0-7)"),
     z: int = Path(..., ge=0, description="Z coordinate (pixel position)"),
     y: int = Path(..., ge=0, description="Y coordinate (pixel position)"),
     x: int = Path(..., ge=0, description="X coordinate (pixel position)"),
     channel: int = Query(0, ge=0, le=999, description="Channel (e.g. 0-3)"),
-    tile_size: Optional[int] = Query(None, ge=8, le=65535, description="Tile size")
+    tile_size: Optional[int] = Query(None, ge=8, le=65536, description="Tile size")
 ):
     """Get image tile for specified pixel coordinates and parameters
     
@@ -73,11 +73,11 @@ async def get_image_tile(
 async def get_atlas_tile(
     specimen_id: str = Path(..., description="Specimen ID"),
     view: ViewType = Path(..., description="View type (sagittal, coronal, horizontal)"),
-    level: int = Path(..., ge=0, le=7, description="Resolution level (0-7)"),
+    level: int = Path(..., ge=0, le=99, description="Resolution level (0-7)"),
     z: int = Path(..., ge=0, description="Z coordinate (pixel position)"),
     y: int = Path(..., ge=0, description="Y coordinate (pixel position)"),
     x: int = Path(..., ge=0, description="X coordinate (pixel position)"),
-    tile_size: Optional[int] = Query(None, ge=64, le=2048, description="Tile size")
+    tile_size: Optional[int] = Query(None, ge=8, le=65536, description="Tile size")
 ):
     """Get atlas mask tile for specified pixel coordinates
     
@@ -128,7 +128,7 @@ async def get_atlas_tile(
 async def get_tile_grid_info(
     specimen_id: str = Path(..., description="Specimen ID"),
     view: ViewType = Path(..., description="View type"),
-    level: int = Path(..., ge=0, le=7, description="Resolution level")
+    level: int = Path(..., ge=0, le=99, description="Resolution level")
 ):
     """Get tile grid information for a specific view and level"""
     

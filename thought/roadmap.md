@@ -21,7 +21,15 @@
 
 ## TODO
 
-* /docs: Specimen ID no options, View type no options.
+* tiles.py: get_image_tile(), get_atlas_tile() has parameter order z,y,x instead of z,x,y now. and API definition changed also.
+Fix frontend code accordingly.
+
+* imaris_handler.py: class ImarisHandler, change the programing style to RAAI. Also change related calling code.
+
+* rename generate to extract for these functions:
+generate_atlas_tile, generate_image_tile
+
+
 * "axes_order": "z_y_x" -> "zyx"
 
 * Check the API tests
