@@ -45,6 +45,7 @@ docker-compose up --build
 # or
 #docker-compose build          # rerun when code changes
 #docker-compose up             # ctrl + C to stop
+# or use docker compose instead of docker-compose
 
 # Access the application
 open http://localhost:3000    # Frontend

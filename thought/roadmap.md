@@ -25,17 +25,17 @@
   - done
 * enable backend py scripts hot-reload in development.
   - done
+* make docker read and writes data for mounted path use a predefined UID and GID.
+  - done
 
 ## TODO
 
-* make docker read and writes data for mounted path use a predefined UID and GID.
+* "axes_order": "z_y_x" -> "zyx"
 
 * add speed benchmark script that test throughtput of image tile API, may include serial mode and parallel mode.
 
 * tiles.py: get_image_tile(), get_atlas_tile() has parameter order z,y,x instead of z,x,y now. and API definition changed also.
 Fix frontend code accordingly.
-
-* "axes_order": "z_y_x" -> "zyx"
 
 * Check the API tests
     Too complecated, remove the asserts or tests that are not essential.
