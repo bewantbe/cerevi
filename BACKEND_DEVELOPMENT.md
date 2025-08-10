@@ -24,8 +24,8 @@ because the data is link through symbolic links.
 ### Docker development (recommended)
 
 ```bash
-# build without Redis
-docker-compose -f docker-compose.yml -f docker-compose.dev-backend-no-redis.yml up -d backend
+# Start backend in development mode with hot reload (no Redis dependency)
+docker-compose -f docker-compose.yml -f docker-compose.dev-backend.yml up -d backend
 
 # Test the API
 curl http://localhost:8000/health

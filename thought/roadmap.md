@@ -23,12 +23,12 @@
   - done
 * imaris_handler.py: class ImarisHandler, change the programing style to RAAI. Also change related calling code.
   - done
+* enable backend py scripts hot-reload in development.
+  - done
 
 ## TODO
 
 * make docker read and writes data for mounted path use a predefined UID and GID.
-
-* enable backend py scripts hot-reload in development.
 
 * add speed benchmark script that test throughtput of image tile API, may include serial mode and parallel mode.
 

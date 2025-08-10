@@ -56,8 +56,8 @@ open http://localhost:8000    # Backend API
 With hot reload of source code
 
 ```bash
-# or in debug mode
-docker-compose -f docker-compose.yml -f docker-compose.dev-frontend.yml -f docker-compose.dev-backend-no-redis.yml up --build
+# Start development with hot reload and no Redis dependency
+docker-compose -f docker-compose.yml -f docker-compose.dev-frontend.yml -f docker-compose.dev-backend.yml up --build
 
 #Or start development through
 #./scripts/app_services.sh start
