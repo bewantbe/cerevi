@@ -158,8 +158,8 @@ if __name__ == "__main__":
 """
 Benchmark result:
 on xws, samba to HPC
-* serial mode: 3.15 requests/s
-* random mode: 1.73 requests/s
+
+python scripts/test_tile_api.py --mode serial --connections 1 --seed 123 --align 256
 
 random mode
 n_conn  reqs(6)     reqs(6,a32)  reqs(6,512,no)
@@ -191,5 +191,7 @@ Summary:
   - at some position, access time can be extremely fast (6 times faster)
   - warming up is not very significant effect (~ +7%)
   - grid alignment is significant (+60%)
+  - the slowness is not due to network latency, because we tested even the data
+    is in SSD, the performance is still suboptimal(4.47 -> 5.80).
 
 """
