@@ -162,12 +162,12 @@ on xws, samba to HPC
 python scripts/test_tile_api.py --mode serial --connections 1 --seed 123 --align 256
 
 random mode
-n_conn  reqs(6)     reqs(6,a32)  reqs(6,512,no)
-1       1.58,4.14   4.67,4.76    3.10, 5.61
+n_conn  reqs(6)     reqs(6,a32)  reqs(6,512,no)  reqs(6,a32,worker8)
+1       1.58,4.14   4.67,4.76    3.10, 5.61      9.87~13.4~19.5
 2       4.18        4.67
 4       4.22        
 32      4.17        4.62
-new pos: 1.72
+new pos: 1.29 1.72
 
 serial mode
 n_conn  reqs(123)  reqs(6)  reqs(6,align256)  reqs(6,align16) align32
@@ -193,5 +193,13 @@ Summary:
   - grid alignment is significant (+60%)
   - the slowness is not due to network latency, because we tested even the data
     is in SSD, the performance is still suboptimal(4.47 -> 5.80).
+
+* what we learn
+  - API should not let server do CPU-bound tasks as possible, such as decompressing
+    the data, since scaling up in client side is much easy, but hard in server side.
+    Preferably read compressed data as is and send to client, let the client to decompress.
+  - So the data tiling should design for 3-views seperately (coronal, sagittal and horizontal)
+  - need to design api so that distinguish compressed data format, and notify
+    client side to read block-by-block.
 
 """
