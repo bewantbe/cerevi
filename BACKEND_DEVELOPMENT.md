@@ -25,7 +25,11 @@ because the data is link through symbolic links.
 
 ```bash
 # Start backend in development mode with hot reload (no Redis dependency)
-docker-compose -f docker-compose.yml -f docker-compose.dev-backend.yml up -d backend
+docker-compose -f docker-compose.yml -f docker-compose.override.xws.yml -f docker-compose.dev-backend.yml up -d backend
+# Start backend with workers
+docker-compose -f docker-compose.yml -f docker-compose.override.xws.yml up -d backend
+# ensure a proper rebuild
+docker-compose -f docker-compose.yml -f docker-compose.override.xws.yml up -d backend --force-recreate
 
 # Test the API
 curl http://localhost:8000/health
