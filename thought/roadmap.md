@@ -17,6 +17,7 @@
   - make it rebuild when asked, not always rebuild.
   - done. use docker-compose to start the services.
 * Fixed image tile API - done
+  - Check the returned image is not completely black.
   - tests - done
 * rename 'generate' to 'extract' for these functions:
   generate_atlas_tile, generate_image_tile
@@ -28,25 +29,43 @@
 * make docker read and writes data for mounted path use a predefined UID and GID.
   - done
 * ✓ "axes_order": "z_y_x" -> "zyx" (COMPLETED)
+* add speed benchmark script that test throughtput of image tile API, may include serial mode and parallel mode.
+  - done
+* Find the true reason of tile image API performance issue.
+  - done
+  - It is due to python GIL and hdf5 reading need libz to decompress.
+  - add --workers 8 to fix it.
+  - future: need to redesign API to have a much better performance.
+* restructure the data dir.
+  - d
 
 ## TODO
 
-* add speed benchmark script that test throughtput of image tile API, may include serial mode and parallel mode.
+* tiles.py: get_image_tile(), get_atlas_tile() has parameter order z,y,x instead of z,x,y now. and API definition changed also. Now we need to fix frontend code accordingly.
 
-* tiles.py: get_image_tile(), get_atlas_tile() has parameter order z,y,x instead of z,x,y now. and API definition changed also.
-Fix frontend code accordingly.
+* fix frontend openseadragon code.
 
 * Check the API tests
     Too complecated, remove the asserts or tests that are not essential.
     Is `TestSpecimenEndpointsCoverage` a bit redundant?
-    Check the returned image is not completely black.
 
 ## possible future tasks
 
-* test backend
+### general
 * improve documentation
-* test functionality
-* benchmark performance
+
+### frontend
+* make it usable
+* design UI/UX
+
+### backend
+* more test of functionality
+* more test of backend
+* more performance benchmark
+
+### data
+* prepare more data
+* add more data
 
 ### restructure directory structure
 
@@ -104,14 +123,11 @@ New (group information from the same source together):
 
 
 Need to change:
-  * code that loads these data
-  * code that generates these data
+  * code that generates data links
     - e.g. 'scripts/convert_regions.py', './scripts/setup_data_links.sh'
+  * code that loads these data, mostly in backend.
   * documentation
 
-* Clean up .env file
-  - some unnecessary variables
-  - IMAGE_DATA_PATH etc.
 
 * upgrade Python v11 to v13 for speed
 * upgrade Node.js v18 to v22 (e.g. v22.18.0 (LTS))
