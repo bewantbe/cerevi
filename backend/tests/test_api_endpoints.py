@@ -64,7 +64,7 @@ class TestSpecimenEndpoints:
     
     def test_get_specimen_details(self, client):
         """Test GET /api/specimens/{id}"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         response = client.get(f"/api/specimens/{specimen_id}")
         assert response.status_code == 200
         
@@ -84,7 +84,7 @@ class TestSpecimenEndpoints:
     
     def test_get_specimen_config(self, client):
         """Test GET /api/specimens/{id}/config"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         response = client.get(f"/api/specimens/{specimen_id}/config")
         assert response.status_code == 200
         
@@ -104,7 +104,7 @@ class TestSpecimenEndpoints:
     
     def test_get_specimen_model(self, client):
         """Test GET /api/specimens/{id}/model"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         response = client.get(f"/api/specimens/{specimen_id}/model")
         
         # This might return 404 if model file doesn't exist in test environment
@@ -134,7 +134,7 @@ class TestMetadataEndpoints:
     
     def test_get_complete_metadata(self, client):
         """Test GET /api/specimens/{id}/metadata"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         response = client.get(f"/api/specimens/{specimen_id}/metadata")
         assert response.status_code == 200
         
@@ -154,7 +154,7 @@ class TestMetadataEndpoints:
     
     def test_get_image_info(self, client):
         """Test GET /api/specimens/{id}/image-info"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         response = client.get(f"/api/specimens/{specimen_id}/image-info")
         
         # This might return 404 if image file doesn't exist in test environment
@@ -179,7 +179,7 @@ class TestMetadataEndpoints:
     
     def test_get_atlas_info(self, client):
         """Test GET /api/specimens/{id}/atlas-info"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         response = client.get(f"/api/specimens/{specimen_id}/atlas-info")
         
         # This might return 404 if atlas file doesn't exist in test environment
@@ -204,7 +204,7 @@ class TestMetadataEndpoints:
     
     def test_get_model_info(self, client):
         """Test GET /api/specimens/{id}/model-info"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         response = client.get(f"/api/specimens/{specimen_id}/model-info")
         
         # This might return 404 if model file doesn't exist in test environment
@@ -227,7 +227,7 @@ class TestMetadataEndpoints:
     
     def test_get_config_info(self, client):
         """Test GET /api/specimens/{id}/config-info"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         response = client.get(f"/api/specimens/{specimen_id}/config-info")
         assert response.status_code == 200
         
@@ -298,7 +298,7 @@ class TestImageEndpoints:
     ])
     def test_image_api_with_critical_statistics(self, client, test_case):
         """Test image API with expected pixel statistics and dimensions from dev script"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         
         # Build API endpoint URL
         url = (f"/api/specimens/{specimen_id}/image/{test_case['view']}/"
@@ -385,7 +385,7 @@ class TestImageEndpoints:
     
     def test_get_image_tile_invalid_parameters(self, client):
         """Test image tile with invalid parameters"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         
         # Test invalid view
         response = client.get(f"/api/specimens/{specimen_id}/image/invalid_view/0/0/0/0")
@@ -408,7 +408,7 @@ class TestImageEndpoints:
     
     def test_get_atlas_tile(self, client):
         """Test GET /api/specimens/{id}/atlas/{view}/{level}/{z}/{x}/{y}"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         view = "sagittal"
         level = 0
         z, x, y = 0, 0, 0
@@ -438,7 +438,7 @@ class TestImageEndpoints:
     
     def test_get_atlas_tile_with_parameters(self, client):
         """Test atlas tile with various parameters"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         
         # Test different views
         for view in ["sagittal", "coronal", "horizontal"]:
@@ -463,7 +463,7 @@ class TestImageEndpoints:
     
     def test_get_atlas_tile_invalid_parameters(self, client):
         """Test atlas tile with invalid parameters"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         
         # Test invalid view
         response = client.get(f"/api/specimens/{specimen_id}/atlas/invalid_view/0/0/0/0")
@@ -479,7 +479,7 @@ class TestImageEndpoints:
     
     def test_get_tile_grid_info(self, client):
         """Test GET /api/specimens/{id}/tile-grid/{view}/{level}"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         view = "sagittal"
         level = 0
         
@@ -522,7 +522,7 @@ class TestImageEndpoints:
     
     def test_get_tile_grid_info_all_views(self, client):
         """Test tile grid info for all views"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         
         for view in ["sagittal", "coronal", "horizontal"]:
             response = client.get(f"/api/specimens/{specimen_id}/tile-grid/{view}/0")
@@ -544,7 +544,7 @@ class TestImageEndpoints:
     
     def test_get_tile_grid_info_invalid_parameters(self, client):
         """Test tile grid info with invalid parameters"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         
         # Test invalid view
         response = client.get(f"/api/specimens/{specimen_id}/tile-grid/invalid_view/0")
@@ -563,7 +563,7 @@ class TestRegionEndpoints:
     
     def test_get_regions(self, client):
         """Test GET /api/specimens/{id}/regions"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         response = client.get(f"/api/specimens/{specimen_id}/regions")
         
         # Check if regions data is available
@@ -622,7 +622,7 @@ class TestRegionEndpoints:
     
     def test_get_regions_with_filters(self, client):
         """Test GET /api/specimens/{id}/regions with query parameters"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         
         # Test with level filter
         response = client.get(f"/api/specimens/{specimen_id}/regions?level=1")
@@ -668,7 +668,7 @@ class TestRegionEndpoints:
     
     def test_pick_region(self, client):
         """Test POST /api/specimens/{id}/pick-region"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         coordinates = {
             "view": "sagittal",
             "x": 100,
@@ -727,7 +727,7 @@ class TestRegionEndpoints:
     
     def test_pick_region_different_views(self, client):
         """Test region picking with different view types"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         
         views = ["sagittal", "coronal", "horizontal"]
         for view in views:
@@ -772,7 +772,7 @@ class TestRegionEndpoints:
     
     def test_pick_region_invalid_coordinates(self, client):
         """Test region picking with invalid coordinates"""
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         
         # Test with invalid view
         invalid_coordinates = {
@@ -840,7 +840,7 @@ class TestErrorHandling:
         """Test API response for invalid paths"""
         invalid_paths = [
             "/api/nonexistent",
-            "/api/specimens/macaque_brain_rm009/nonexistent",
+            "/api/specimens/macaque_brain_RM009/nonexistent",
             "/api/invalid/path"
         ]
         
@@ -853,9 +853,9 @@ class TestErrorHandling:
         # Test POST on GET-only endpoints
         get_only_endpoints = [
             "/api/specimens",
-            "/api/specimens/macaque_brain_rm009",
-            "/api/specimens/macaque_brain_rm009/config",
-            "/api/specimens/macaque_brain_rm009/metadata"
+            "/api/specimens/macaque_brain_RM009",
+            "/api/specimens/macaque_brain_RM009/config",
+            "/api/specimens/macaque_brain_RM009/metadata"
         ]
         
         for endpoint in get_only_endpoints:
@@ -926,8 +926,8 @@ class TestSpecimenEndpointsCoverage:
         assert isinstance(data, list)
         
         # Test with known specimen
-        specimen = next((s for s in data if s["id"] == "macaque_brain_rm009"), None)
-        assert specimen is not None, "Expected specimen 'macaque_brain_rm009' not found"
+        specimen = next((s for s in data if s["id"] == "macaque_brain_RM009"), None)
+        assert specimen is not None, "Expected specimen 'macaque_brain_RM009' not found"
         
         # Test required fields
         required_fields = ["id", "name", "species", "description", "has_image", "has_atlas", "has_model"]

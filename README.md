@@ -127,21 +127,20 @@ docker system prune
 ### Directory Structure
 ```
 data/
-├── specimens/              # Specimen-specific data
-│   └── macaque_brain_rm009/
-│       ├── image.ims       # Multi-resolution image data (HDF5)
-│       └── atlas.ims       # Brain region masks (HDF5)
-├── models/                 # 3D brain shell models
-│   └── macaque_brain_rm009/
-│       └── brain_shell.obj # 3D brain surface model
-└── regions/                # Brain region definitions
-    ├── macaque_brain_regions.json   # Hierarchical region structure
-    └── macaque_brain_regions.xlsx   # Source atlas data
+├── macaque_brain_RM009/              # RM009 specimen data (entity-based organization)
+│   ├── image.ims                     # Multi-resolution image data (HDF5)
+│   ├── atlas.ims                     # Brain region masks (HDF5)
+│   ├── brain_shell.obj               # 3D brain surface model
+│   └── readme                        # Basic information about the specimen
+└── macaque_brain_dMRI_atlas_CIVM/    # CIVM atlas data
+    ├── macaque_brain_regions.json    # Hierarchical region structure
+    ├── macaque_brain_regions.xlsx    # Source atlas data (Excel)
+    └── copyright                     # Attribution and usage information
 ```
 
 ### File Formats
 
-#### Images (`specimens/{specimen_id}/image.ims`)
+#### Images (`macaque_brain_RM009/image.ims`)
 - **Format**: HDF5 (.ims) with multi-resolution pyramids
 - **Structure**: Multiple resolution levels (e.g. 0-7) with decreasing resolution
 - **Organization**: `/DataSet/ResolutionLevel {N}/TimePoint 0/Channel {N}/Data`
@@ -149,19 +148,19 @@ data/
 - **Data Type**: e.g. 16-bit integer arrays
 - **Coordinate System**: Right-handed (z, y, x) order
 
-#### Atlas (`specimens/{specimen_id}/atlas.ims`)
+#### Atlas (`macaque_brain_RM009/atlas.ims`)
 - **Format**: HDF5 (.ims) matching image structure
 - **Content**: Brain region masks with integer labels
 - **Values**: Region IDs corresponding to hierarchical brain atlas
 - **Resolution**: Same pyramid structure as image data
 
-#### 3D Models (`models/{specimen_id}/brain_shell.obj`)
+#### 3D Models (`macaque_brain_RM009/brain_shell.obj`)
 - **Format**: Wavefront OBJ files
 - **Content**: 3D brain surface mesh
 - **Scale**: e.g. 10 μm units matching image resolution
 - **Coordinate System**: Aligned with image coordinate system
 
-#### Brain Regions (`regions/macaque_brain_regions.json`)
+#### Brain Regions (`macaque_brain_dMRI_atlas_CIVM/macaque_brain_regions.json`)
 - **Format**: JSON with hierarchical structure
 - **Content**: e.g. 241 brain regions with 4-level hierarchy
 - **Structure**: 
@@ -169,6 +168,10 @@ data/
   - `hierarchy{}`: Nested anatomical organization
   - `region_lookup{}`: ID-based region access
 - **Metadata**: Coordinate system, conversion date, region count
+
+#### Attribution Files
+- **Specimen readme** (`macaque_brain_RM009/readme`): Basic specimen information and VISoR methodology details
+- **Atlas copyright** (`macaque_brain_dMRI_atlas_CIVM/copyright`): CIVM attribution, citation requirements, and usage terms
 
 ### Metadata and Configuration
 

@@ -38,15 +38,16 @@ def convert_xlsx_to_json(xlsx_path: str, output_path: str) -> None:
     
     for index, row in df.iterrows():
         # Extract region data
+        idx = int(index) + 1  # Ensure index is integer for arithmetic
         region = {
-            "id": int(row.get('Value', index + 1)),
-            "name": str(row.get('Structure', f'Region_{index + 1}')),
+            "id": int(row.get('Value', idx)),
+            "name": str(row.get('Structure', f'Region_{idx}')),
             "abbreviation": str(row.get('Abbreviation', '')),
             "level1": str(row.get('Level 1', '')),
             "level2": str(row.get('Level 2', '')),
             "level3": str(row.get('Level 3', '')),
             "level4": str(row.get('Level 4', '')),
-            "value": int(row.get('Value', index + 1)),
+            "value": int(row.get('Value', idx)),
             "parent_id": None,  # Will be computed based on hierarchy
             "children": []
         }
@@ -212,9 +213,9 @@ def main():
     """Main conversion function"""
     project_root = Path(__file__).parent.parent
     
-    # Input and output paths
-    xlsx_path = project_root / "data" / "regions" / "macaque_brain_regions.xlsx"
-    json_path = project_root / "data" / "regions" / "macaque_brain_regions.json"
+    # Input and output paths - updated for new structure
+    xlsx_path = project_root / "data" / "macaque_brain_dMRI_atlas_CIVM" / "macaque_brain_regions.xlsx"
+    json_path = project_root / "data" / "macaque_brain_dMRI_atlas_CIVM" / "macaque_brain_regions.json"
     
     print("VISoR Platform - Region Hierarchy Conversion")
     print("=" * 50)

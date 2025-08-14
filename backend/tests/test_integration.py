@@ -54,12 +54,12 @@ class TestBackendIntegration:
         
         # Check if data directories exist
         assert settings.data_path.exists(), f"Data path does not exist: {settings.data_path}"
-        assert settings.specimens_path.exists(), f"Specimens path does not exist: {settings.specimens_path}"
-        assert settings.models_path.exists(), f"Models path does not exist: {settings.models_path}"
-        assert settings.regions_path.exists(), f"Regions path does not exist: {settings.regions_path}"
+        macaque_path = settings.get_specimen_path("macaque_brain_RM009")
+        assert macaque_path.exists(), f"Macaque RM009 path does not exist: {macaque_path}"
+        assert settings.atlas_civm_path.exists(), f"Atlas CIVM path does not exist: {settings.atlas_civm_path}"
         
         # Check specimen data
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         image_path = settings.get_image_path(specimen_id)
         atlas_path = settings.get_atlas_path(specimen_id)
         model_path = settings.get_model_path(specimen_id)
@@ -103,7 +103,7 @@ class TestBackendIntegration:
         from app.config import settings
         from app.services.imaris_handler import ImarisHandler
         
-        specimen_id = "macaque_brain_rm009"
+        specimen_id = "macaque_brain_RM009"
         image_path = settings.get_image_path(specimen_id)
         
         if image_path and image_path.exists():

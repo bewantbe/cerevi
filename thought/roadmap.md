@@ -37,41 +37,11 @@
   - add --workers 8 to fix it.
   - future: need to redesign API to have a much better performance.
 * restructure the data dir.
-  - d
-
-## TODO
-
-* tiles.py: get_image_tile(), get_atlas_tile() has parameter order z,y,x instead of z,x,y now. and API definition changed also. Now we need to fix frontend code accordingly.
-
-* fix frontend openseadragon code.
-
-* Check the API tests
-    Too complecated, remove the asserts or tests that are not essential.
-    Is `TestSpecimenEndpointsCoverage` a bit redundant?
-
-## possible future tasks
-
-### general
-* improve documentation
-
-### frontend
-* make it usable
-* design UI/UX
-
-### backend
-* more test of functionality
-* more test of backend
-* more performance benchmark
-
-### data
-* prepare more data
-* add more data
-
-### restructure directory structure
+  - done
 
 Analysis the backend code and restructure the data directory.
 
-Origin(By data type):
+Origin (grounp by data type):
 
     data/
     ├── specimens/
@@ -85,13 +55,14 @@ Origin(By data type):
         ├── macaque_brain_regions.json   # Processed region hierarchy (JSON)
         └── macaque_brain_regions.xlsx   # Source region data (Excel)
 
-New (group information from the same source together):
+New (group data file from the same entity):
 
     data/
     ├── macaque_brain_RM009/
     │   ├── image.ims          # Main multi-resolution brain image data
     │   ├── atlas.ims          # Brain region atlas/mask data
-    │   └── brain_shell.obj    # 3D brain shell model
+    │   ├── brain_shell.obj    # 3D brain shell model
+    │   └── readme             # basic info about the sample
     └── macaque_brain_dMRI_atlas_CIVM/
         ├── macaque_brain_regions.json   # Processed region hierarchy (JSON)
         ├── macaque_brain_regions.xlsx   # Source region data (Excel)
@@ -127,7 +98,38 @@ Need to change:
     - e.g. 'scripts/convert_regions.py', './scripts/setup_data_links.sh'
   * code that loads these data, mostly in backend.
   * documentation
+Done.
 
+* 
+
+
+## TODO
+
+* tiles.py: get_image_tile(), get_atlas_tile() has parameter order z,y,x instead of z,x,y now. and API definition changed also. Now we need to fix frontend code accordingly.
+
+* fix frontend openseadragon code.
+
+* Check the API tests
+    Too complecated, remove the asserts or tests that are not essential.
+    Is `TestSpecimenEndpointsCoverage` a bit redundant?
+
+## possible future tasks
+
+### general
+* improve documentation
+
+### frontend
+* make it usable
+* design UI/UX
+
+### backend
+* more test of functionality
+* more test of backend
+* more performance benchmark
+
+### data
+* prepare more data
+* add more data
 
 * upgrade Python v11 to v13 for speed
 * upgrade Node.js v18 to v22 (e.g. v22.18.0 (LTS))

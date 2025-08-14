@@ -34,9 +34,8 @@ class Settings(BaseSettings):
     
     # Data paths
     data_path: Path = Field(default_factory=lambda: Path(os.getenv("DATA_PATH", "data")))
-    specimens_path: Path = Field(default_factory=lambda: Path(os.getenv("DATA_PATH", "data")) / "specimens")
-    models_path: Path = Field(default_factory=lambda: Path(os.getenv("DATA_PATH", "data")) / "models")
-    regions_path: Path = Field(default_factory=lambda: Path(os.getenv("DATA_PATH", "data")) / "regions")
+    # Atlas path for region data
+    atlas_civm_path: Path = Field(default_factory=lambda: Path(os.getenv("DATA_PATH", "data")) / "macaque_brain_dMRI_atlas_CIVM")
     
     # Redis settings
     redis_url: str = "redis://redis:6379"
@@ -86,7 +85,7 @@ class Settings(BaseSettings):
         
     def get_specimen_path(self, specimen_id: str) -> Path:
         """Get the path to a specific specimen directory"""
-        return self.specimens_path / specimen_id
+        return self.data_path / specimen_id
     
     def get_image_path(self, specimen_id: str) -> Path:
         """Get the path to the image file for a specimen"""
@@ -98,11 +97,11 @@ class Settings(BaseSettings):
     
     def get_model_path(self, specimen_id: str) -> Path:
         """Get the path to the 3D model file for a specimen"""
-        return self.models_path / specimen_id / "brain_shell.obj"
+        return self.get_specimen_path(specimen_id) / "brain_shell.obj"
     
     def get_regions_file(self) -> Path:
         """Get the path to the regions JSON file"""
-        return self.regions_path / "macaque_brain_regions.json"
+        return self.atlas_civm_path / "macaque_brain_regions.json"
 
 
 # Global settings instance
@@ -111,8 +110,8 @@ settings = Settings()
 
 # Specimen configuration
 SPECIMENS_CONFIG = {
-    "macaque_brain_rm009": {
-        "id": "macaque_brain_rm009",
+    "macaque_brain_RM009": {
+        "id": "macaque_brain_RM009",
         "name": "Macaque Brain RM009",
         "species": "Macaca mulatta",
         "description": "High-resolution macaque brain imaging with VISoR technology",
