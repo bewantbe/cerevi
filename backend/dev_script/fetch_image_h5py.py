@@ -138,7 +138,7 @@ def read_save_ims(specimen_id, view, level, channel, z, y, x, tile_size):
         tile_f = tile[::-1, :]
         # save image
         image_bytes = array_to_image_bytes(tile_f, format='JPEG')  
-        output_path = Path(__file__).parent / f"image_h5py_{specimen_id}_{view}_l{level}_c{channel}_z{z}_y{y}_x{x}.jpg"
+        output_path = Path(__file__).parent.parent / "tmp" / f"image_h5py_{specimen_id}_{view}_l{level}_c{channel}_z{z}_y{y}_x{x}.jpg"
         with open(output_path, 'wb') as f:
             f.write(image_bytes)
         print(f"Image saved successfully: {output_path}")

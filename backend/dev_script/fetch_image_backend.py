@@ -64,7 +64,7 @@ def read_save_ims_backend(specimen_id, view, level, channel, z, y, x, tile_size)
         print(f"  Tile extraction time: {elapsed_time:.3f} seconds")
         
         # Save to file with same naming convention as h5py
-        output_path = Path(__file__).parent / f"image_backend_{specimen_id}_{view}_l{level}_c{channel}_z{z}_y{y}_x{x}.jpg"
+        output_path = Path(__file__).parent.parent / "tmp" / f"image_backend_{specimen_id}_{view}_l{level}_c{channel}_z{z}_y{y}_x{x}.jpg"
         
         with open(output_path, 'wb') as f:
             f.write(image_bytes)
@@ -137,7 +137,7 @@ def main():
     ]
     
     # Test the same parameters as h5py
-    for pm in params[:-1]:  # Skip the last one for now
+    for pm in params:
         result = read_save_ims_backend(**pm)
         if result != 0:
             return result
