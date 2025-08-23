@@ -100,7 +100,10 @@ Need to change:
   * documentation
 Done.
 
-* 
+* Fix failed test: test_pick_region etc.
+  - done
+* Check functions of pick_region
+  - ing
 
 
 ## TODO

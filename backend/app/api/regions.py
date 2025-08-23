@@ -11,7 +11,7 @@ from ..models.region import (
     Region, RegionHierarchy, RegionPickResult, 
     RegionFilter, RegionResponse, RegionStatistics
 )
-from ..models.specimen import ViewType, RegionPickRequest
+from ..models.specimen import ViewType
 from ..services.tile_service import TileService
 from ..config import settings, get_specimen_config
 
@@ -151,10 +151,14 @@ async def get_region(
         logger.error(f"Failed to get region: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve region")
 
-@router.post("/specimens/{specimen_id}/pick-region", response_model=RegionPickResult)
+@router.get("/specimens/{specimen_id}/pick-region/{view}/{level}/{z}/{y}/{x}", response_model=RegionPickResult)
 async def pick_region(
-    request: RegionPickRequest,
-    specimen_id: str = Path(..., description="Specimen ID")
+    specimen_id: str = Path(..., description="Specimen ID"),
+    view: ViewType = Path(..., description="View type"),
+    level: int = Path(..., ge=0, le=7, description="Resolution level"),
+    z: int = Path(..., ge=0, description="Z coordinate"),
+    y: int = Path(..., ge=0, description="Y coordinate"),
+    x: int = Path(..., ge=0, description="X coordinate")
 ):
     """Pick brain region at specified coordinates"""
     
@@ -166,11 +170,11 @@ async def pick_region(
         # Get region value from atlas at coordinate
         region_value = tile_service.get_region_at_coordinate(
             specimen_id=specimen_id,
-            view=request.view,
-            x=request.x,
-            y=request.y,
-            z=request.z,
-            level=request.level
+            view=view,
+            x=x,
+            y=y,
+            z=z,
+            level=level
         )
         
         # Look up region information
@@ -179,7 +183,7 @@ async def pick_region(
         
         result = RegionPickResult(
             specimen_id=specimen_id,
-            coordinate={"x": request.x, "y": request.y, "z": request.z},
+            coordinate={"x": x, "y": y, "z": z},
             region=region,
             region_value=region_value,
             confidence=1.0 if region else 0.0

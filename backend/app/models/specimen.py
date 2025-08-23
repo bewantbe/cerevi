@@ -78,14 +78,6 @@ class TileRequest(BaseModel):
     channel: Optional[int] = Field(default=0, ge=0, le=3)
     tile_size: Optional[int] = Field(default=512, ge=64, le=2048)
 
-class RegionPickRequest(BaseModel):
-    """Region picking request model"""
-    specimen_id: str
-    view: ViewType
-    x: int = Field(ge=0)
-    y: int = Field(ge=0)
-    z: int = Field(ge=0)
-    level: int = Field(default=0, ge=0, le=7)
 
 class CoordinateTransform(BaseModel):
     """Coordinate transformation model"""

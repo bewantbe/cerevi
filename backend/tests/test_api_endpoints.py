@@ -667,17 +667,15 @@ class TestRegionEndpoints:
         assert "not found" in data["detail"].lower()
     
     def test_pick_region(self, client):
-        """Test POST /api/specimens/{id}/pick-region"""
+        """Test GET /api/specimens/{id}/pick-region/{view}/{level}/{z}/{y}/{x}"""
         specimen_id = "macaque_brain_RM009"
-        coordinates = {
-            "view": "sagittal",
-            "x": 100,
-            "y": 100,
-            "z": 100,
-            "level": 0
-        }
+        view = "sagittal"
+        level = 0
+        x = 100
+        y = 100
+        z = 100
         
-        response = client.post(f"/api/specimens/{specimen_id}/pick-region", json=coordinates)
+        response = client.get(f"/api/specimens/{specimen_id}/pick-region/{view}/{level}/{z}/{y}/{x}")
         
         # Check if region picking is available
         if response.status_code == 200:
@@ -697,9 +695,9 @@ class TestRegionEndpoints:
             assert "x" in coord
             assert "y" in coord
             assert "z" in coord
-            assert coord["x"] == coordinates["x"]
-            assert coord["y"] == coordinates["y"]
-            assert coord["z"] == coordinates["z"]
+            assert coord["x"] == x
+            assert coord["y"] == y
+            assert coord["z"] == z
             
             # Verify data types
             assert isinstance(data["region_value"], int)
@@ -731,22 +729,19 @@ class TestRegionEndpoints:
         
         views = ["sagittal", "coronal", "horizontal"]
         for view in views:
-            coordinates = {
-                "view": view,
-                "x": 50,
-                "y": 50,
-                "z": 50,
-                "level": 0
-            }
+            level = 0
+            x = 50
+            y = 50
+            z = 50
             
-            response = client.post(f"/api/specimens/{specimen_id}/pick-region", json=coordinates)
+            response = client.get(f"/api/specimens/{specimen_id}/pick-region/{view}/{level}/{z}/{y}/{x}")
             
             if response.status_code == 200:
                 data = response.json()
                 assert data["specimen_id"] == specimen_id
-                assert data["coordinate"]["x"] == coordinates["x"]
-                assert data["coordinate"]["y"] == coordinates["y"]
-                assert data["coordinate"]["z"] == coordinates["z"]
+                assert data["coordinate"]["x"] == x
+                assert data["coordinate"]["y"] == y
+                assert data["coordinate"]["z"] == z
             elif response.status_code == 500:
                 # Skip if region picking not available
                 pytest.skip(f"Region picking not available for view {view}")
@@ -754,16 +749,14 @@ class TestRegionEndpoints:
                 pytest.fail(f"Unexpected status code for view {view}: {response.status_code}")
     
     def test_pick_region_invalid_specimen(self, client):
-        """Test POST /api/specimens/{id}/pick-region with invalid specimen ID"""
-        coordinates = {
-            "view": "sagittal",
-            "x": 100,
-            "y": 100,
-            "z": 100,
-            "level": 0
-        }
+        """Test GET /api/specimens/{id}/pick-region/{view}/{level}/{z}/{y}/{x} with invalid specimen ID"""
+        view = "sagittal"
+        level = 0
+        x = 100
+        y = 100
+        z = 100
         
-        response = client.post("/api/specimens/invalid_specimen_id/pick-region", json=coordinates)
+        response = client.get(f"/api/specimens/invalid_specimen_id/pick-region/{view}/{level}/{z}/{y}/{x}")
         assert response.status_code == 404
         
         data = response.json()
@@ -771,42 +764,29 @@ class TestRegionEndpoints:
         assert "not found" in data["detail"].lower()
     
     def test_pick_region_invalid_coordinates(self, client):
-        """Test region picking with invalid coordinates"""
+        """Test region picking with invalid path parameters"""
         specimen_id = "macaque_brain_RM009"
         
         # Test with invalid view
-        invalid_coordinates = {
-            "view": "invalid_view",
-            "x": 100,
-            "y": 100,
-            "z": 100,
-            "level": 0
-        }
-        
-        response = client.post(f"/api/specimens/{specimen_id}/pick-region", json=invalid_coordinates)
+        response = client.get(f"/api/specimens/{specimen_id}/pick-region/invalid_view/0/100/100/100")
         assert response.status_code == 422  # Validation error
         
-        # Test with missing required fields
-        incomplete_coordinates = {
-            "view": "sagittal",
-            "x": 100,
-            "y": 100
-            # Missing z and level
-        }
+        # Test with invalid level (negative)
+        response = client.get(f"/api/specimens/{specimen_id}/pick-region/sagittal/-1/100/100/100")
+        assert response.status_code == 422  # Validation error
         
-        response = client.post(f"/api/specimens/{specimen_id}/pick-region", json=incomplete_coordinates)
+        # Test with invalid level (too high)
+        response = client.get(f"/api/specimens/{specimen_id}/pick-region/sagittal/10/100/100/100")
         assert response.status_code == 422  # Validation error
         
         # Test with negative coordinates
-        negative_coordinates = {
-            "view": "sagittal",
-            "x": -1,
-            "y": 100,
-            "z": 100,
-            "level": 0
-        }
+        response = client.get(f"/api/specimens/{specimen_id}/pick-region/sagittal/0/100/100/-1")
+        assert response.status_code == 422  # Validation error
         
-        response = client.post(f"/api/specimens/{specimen_id}/pick-region", json=negative_coordinates)
+        response = client.get(f"/api/specimens/{specimen_id}/pick-region/sagittal/0/100/-1/100")
+        assert response.status_code == 422  # Validation error
+        
+        response = client.get(f"/api/specimens/{specimen_id}/pick-region/sagittal/0/-1/100/100")
         assert response.status_code == 422  # Validation error
 
 class TestErrorHandling:
