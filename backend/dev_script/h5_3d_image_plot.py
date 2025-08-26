@@ -4,6 +4,8 @@
 # python dev_script/h5_3d_image_plot.py --img-path "/media/xyy/Extreme SSD/data/macaque_brain_rm009/atlas.ims" \
 # --level 3 --channel 0 --zyx 100,100,100 --pixel-normalize-mode index --interactive
 
+# python h5_3d_image_plot.py --img-path "/mnt/VISoR_Reconstruction/SIAT_SIAT/BiGuoqiang/Human_Brain/BB001/sps-projection/out-test2.lyp.ims" --level 5 --channel 0 --zyx 100,100,100 --interactive
+
 import sys
 import time
 from pathlib import Path
@@ -15,6 +17,8 @@ import numpy as np
 _a = lambda a: np.array(a)
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+
+import tifffile
 
 debug_level = 5
 
@@ -277,7 +281,8 @@ if __name__ == '__main__':
     parser.add_argument("--zyx", type=str, help="coordinate for Z,Y,X")
     parser.add_argument("--thickness", type=int, default=1, help="thickness for MIP")
     parser.add_argument("--interactive", action="store_true", help="interactive show or not.")
-    parser.add_argument("--pixel-normalize-mode", type=str, help="pixel_scaling_mode, [auto_intensity, index, '100,2000']")
+    parser.add_argument("--pixel-normalize-mode", type=str, default="auto_intensity", help="pixel_scaling_mode, [auto_intensity, index, '100,2000']")
+    parser.add_argument("--save-to-tiff", action="store_true")
     args = parser.parse_args()
 
     img_path = args.img_path
@@ -293,6 +298,9 @@ if __name__ == '__main__':
     else:
         print('Error: unknown image format')
         raise ValueError
+
+    if args.save_to_tiff:
+        tifffile.imwrite("output.tiff", np.array(im3))
     
     zyx = tuple(map(int, args.zyx.split(',')))
     im_shape = im3.shape
