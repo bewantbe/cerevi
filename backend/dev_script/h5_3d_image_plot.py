@@ -301,6 +301,7 @@ if __name__ == '__main__':
 
     if args.save_to_tiff:
         tifffile.imwrite("output.tiff", np.array(im3))
+        sys.exit(0)
     
     zyx = tuple(map(int, args.zyx.split(',')))
     im_shape = im3.shape
