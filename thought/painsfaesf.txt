@@ -1,0 +1,923 @@
+
+
+Prompt
+======
+2025-06-10
+
+Help me to write a modern web app, with frontend and backend, and docker-compose.
+
+
+## Frontend
+
+Use Vue.js single file components and pinia, in TypeScript.
+
+Parimary pages and components:
+
+# page: Home page
+
+Intro to: Volumetric Imaging with Synchronized on-the-fly-scan and Readout (VISoR) for high-throughput, high-quality brain mapping, from mouse brain to monkey brain and human brain at micro-meter resolution.
+
+List of demo specimen (clickable, with basic info and image thumb):
+* mouse brain
+* mouse whole body
+* macaque brain
+* human brain
+
+Copyright
+
+# page: brain image and atlas
+
+Once clicked a specimen. User goes to this page, showing the interactive brain(or tissue) image.
+
+The page contains 3-views of the tissue images (sagittalis, horizontal, coronal), and an additional 3D view of brain shell (mesh, may use Three.js).
+
+The 3-views images are multi-resolution, can be zoomed in or out (Using OpenSeadragon) with mouse. Possibly multi-channeled and with brain region mask.
+
+The same page contains a left pannel for control and information. There several tabs: 
+
+  * Basic info and meta data about the sample and image;
+  * For tuning the brightness and contrast of the image;
+  * Enable/disable showing the brain region mask (overlayed(mixed) with the brain image);
+  * Brain region list, that can be clicked (checked) to highlight the brain area.
+
+## backend
+
+Python FastAPI server that privides basic info and images to the frontend. Specifically:
+
+* The images of each demo specimen are stored in a hdf5 file, 3D image array with resolution pyramid. The backend serves the images that are suitable for frontend.
+
+* Serves brain (or tissue) region list (names, ids) for each specimen.
+
+* Serves brain (or tissue) region mask, also in hd5 file. the pixel values of the mask are the region ids. Generally has different resolution to corresponding images.
+
+
+## Other requirements
+
+URLs are copy-paste-friendly, i.e. user with the same URL should see the same page and same image position.
+
+Clear project structure. Modularized code that is easy to re-use and extend.
+
+Should have a good performance and smooth user experience.
+
+Support multi-language (English and Chinese)
+
+
+========================
+
+...
+
+
+## Development Workflow
+
+1. __Phase 1__: Set up project structure and Docker environment
+2. __Phase 2__: Implement basic frontend routing and layout
+3. __Phase 3__: Create backend API with HDF5 integration
+4. __Phase 4__: Implement OpenSeadragon image viewing
+5. __Phase 5__: Add Three.js 3D visualization
+6. __Phase 6__: Build control panel and region management
+7. __Phase 7__: Add internationalization and final polish
+8. __Phase 8__: Performance optimization and testing
+
+## Questions for Clarification
+
+Before we proceed to implementation, I have a few questions:
+
+1. __Sample Data__: Do you have existing HDF5 files with brain images and region masks, or should I create mock data for development?
+
+2. __3D Brain Models__: Do you have 3D mesh files for the brain shells, or should I use procedural generation/basic shapes for the demo?
+
+3. __Deployment__: Are there any specific deployment requirements or constraints (cloud provider, security requirements, etc.)?
+
+4. __Image Resolution__: What are the typical image dimensions and pyramid levels you'll be working with?
+
+5. __Region Hierarchy__: Do brain regions have a hierarchical structure that needs to be represented in the UI?
+
+Would you like me to proceed with this architecture, or would you like to discuss any modifications to the plan?
+
+
+========================
+
+## Answers:
+
+1. Sample Data. We have a Sample Data (large 3D arrays)
+/share/data/VISoR_Reconstruction/SIAT_SIAT/BiGuoqiang/Macaque_Brain/RM009_2/z00000_c1_1.ims
+It has internal data like this:
+```
+$ h5ls -r z00000_c1_1.ims
+/                        Group
+/DataSet                 Group
+/DataSet/ResolutionLevel\ 0 Group
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0 Group
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 0 Group
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 0/Data Dataset {7296, 6016, 7040}
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 0/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 1 Group
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 1/Data Dataset {7296, 6016, 7040}
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 1/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 2 Group
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 2/Data Dataset {7296, 6016, 7040}
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 2/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 3 Group
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 3/Data Dataset {7296, 6016, 7040}
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 3/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 1 Group
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0 Group
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 0 Group
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 0/Data Dataset {3712, 3008, 3520}
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 0/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 1 Group
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 1/Data Dataset {3712, 3008, 3520}
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 1/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 2 Group
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 2/Data Dataset {3712, 3008, 3520}
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 2/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 3 Group
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 3/Data Dataset {3712, 3008, 3520}
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 3/Histogram Dataset {256}
+...
+/DataSet/ResolutionLevel\ 6 Group
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0 Group
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 0 Group
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 0/Data Dataset {128, 128, 128}
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 0/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 1 Group
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 1/Data Dataset {128, 128, 128}
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 1/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 2 Group
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 2/Data Dataset {128, 128, 128}
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 2/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 3 Group
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 3/Data Dataset {128, 128, 128}
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 3/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 7 Group
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0 Group
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 0 Group
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 0/Data Dataset {64, 64, 64}
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 0/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 1 Group
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 1/Data Dataset {64, 64, 64}
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 1/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 2 Group
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 2/Data Dataset {64, 64, 64}
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 2/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 3 Group
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 3/Data Dataset {64, 64, 64}
+/DataSet/ResolutionLevel\ 7/TimePoint\ 0/Channel\ 3/Histogram Dataset {256}
+/DataSetInfo             Group
+/DataSetInfo/Channel\ 0  Group
+/DataSetInfo/Channel\ 1  Group
+/DataSetInfo/Channel\ 2  Group
+/DataSetInfo/Channel\ 3  Group
+/DataSetInfo/Image       Group
+/DataSetInfo/Imaris      Group
+/DataSetInfo/ImarisDataSet Group
+/DataSetInfo/Log         Group
+/DataSetInfo/TimeInfo    Group
+/DataSetTimes            Group
+/DataSetTimes/Time       Dataset {1}
+/DataSetTimes/TimeBegin  Dataset {1}
+/Scene                   Group
+/Scene/Content           Group
+/Scene/Data              Dataset {1/Inf}
+/Scene8                  Group
+/Scene8/Content          Group
+/Scene8/Data             Dataset {1/Inf}
+```
+
+We may use low-resolution (e.g. ResolutionLevel 4 - 7) for testing purpose.
+Help me make a soft link to it for use of this project.
+
+2. 3D Brain Models. 
+Brain shell model for macaque.
+/mnt/xyy/SIAT_CAS/xu/tracing/swc_collect/RM009/mesh/root/1.obj
+Help me make a soft link to it for use of this project.
+
+No brain shell for other specimen yet, may put a place holder for others.
+
+3. No specific deployment requirements. Just put Dockerfile etc. Now we are prototyping UI/UX/backend.
+
+4. Image Resolution, see answer 1.
+
+5. Region Hierarchy. Yes, the Global atlas mask have a hierarchical structure.
+
+Example:
+/share/data/VISoR_Reconstruction/SIAT_SIAT/BiGuoqiang/Macaque_Brain/RM009_2/V1_layers/z00000_c1_mask.ims
+
+```
+$ h5ls -r z00000_c1_mask.ims
+/                        Group
+/DataSet                 Group
+/DataSet/ResolutionLevel\ 0 Group
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0 Group
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 0 Group
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 0/Data Dataset {3648, 3584, 5376}
+/DataSet/ResolutionLevel\ 0/TimePoint\ 0/Channel\ 0/Histogram Dataset {256}
+/DataSet/ResolutionLevel\ 1 Group
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0 Group
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 0 Group
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 0/Data Dataset {1856, 1792, 2688}
+/DataSet/ResolutionLevel\ 1/TimePoint\ 0/Channel\ 0/Histogram Dataset {256}
+...
+/DataSet/ResolutionLevel\ 6 Group
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0 Group
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 0 Group
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 0/Data Dataset {64, 128, 128}
+/DataSet/ResolutionLevel\ 6/TimePoint\ 0/Channel\ 0/Histogram Dataset {256}
+/DataSetInfo             Group
+/DataSetInfo/Channel\ 0  Group
+/DataSetInfo/Image       Group
+/DataSetInfo/Imaris      Group
+/DataSetInfo/ImarisDataSet Group
+/DataSetInfo/Log         Group
+/DataSetInfo/TimeInfo    Group
+/Thumbnail               Group
+/Thumbnail/Data          Dataset {171, 1024}
+```
+
+Help me make a soft link to it for use of this project.
+
+Generally have lower resolution compared to corresponding specimen image.
+
+
+
+## Additional modifications:
+
+# Atlas Viewer
+
+Left control panel + main viewer area
+
+main viewer area: Use four grids, three for Three synchronized 2D views (sagittal, horizontal, coronal), one for 3D brain shell view. For each view, there is a small sign (button) in the corner, once clikced, will maximize the corresponding view. And have a way to returen to "four grids" view.
+
+# backend API design
+
+Add one more type of region mask: Global atlas mask
+
+Like this:
+
+  GET /api/specimens/{id}/region/{view}/{level}/{x}/{y} - Get global atlas mask tile
+
+Where the pixel values of the mask are the region ids, it maybe lossless compressed (i.e. png) or tiled or both. Global atlas mask is also used for identifying brain region name when user clicked a position in the views (sagittalis, horizontal, coronal).
+
+Also we should have an api to get image/mask tile metadata, such as tile size, image dimension, available resolution levels.
+
+===============================
+
+## Questions Before Implementation:
+
+1. __Region Hierarchy Data__: Do you have a JSON/XML file that describes the hierarchical structure of brain regions, or should I extract this from the atlas mask metadata?
+
+2. __Coordinate Systems__: What's the coordinate system relationship between the three views (sagittal, horizontal, coronal)? Do I need specific transformation matrices?
+
+3. __Tile Size__: What tile size would you prefer for optimal performance? (256x256, 512x512, etc.)
+
+4. __Channel Names__: Do the 4 channels have specific names/purposes that should be displayed in the UI?
+
+5. __3D Model Alignment__: How should the 3D brain shell be aligned with the 2D image coordinates?
+
+=================================
+
+## Answers
+
+1. Region Hierarchy Data: 
+It it currently a xlsx file. help me convert it to a suitable format if it is a good practice:
+/mnt/xyy/SIAT_CAS/xu/tracing/swc_collect/RM009/mesh/NIHMS696288-supplement-4.xlsx
+It looks like this
+```
+Structure	Abbreviation	Level 1	Level 2	Level 3	Level 4	Value
+ventricles	LV	ventricles	ventricles	ventricles	ventricles	1
+medulla	Md	hindbrain	myelencephalon	medulla	medulla	2
+pons	Pn	hindbrain	metencephalon	pons	pons	3
+cerebellum	Cb	hindbrain	metencephalon	cerebellum	cerebellum	4
+midbrain	MB	midbrain	midbrain	midbrain	midbrain	5
+anterior pulvinar	Apul	forebrain	diencephalon	p2	thalamus	6
+anteromedial thalamic nucleus	AM#1	forebrain	diencephalon	p2	thalamus	7
+anteroventral thalamic nucleus	AV	forebrain	diencephalon	p2	thalamus	8
+```
+
+Create a soft link of it for me.
+
+2. Coordinate Systems: Assume the image array index is in (z,y,x) order. Sagittal plane perpendicular to the X-axis; Coronal plane perpendicular to the Y-axis; Horizontal plane perpendicular to the Z-axis. Use right-handed system.
+
+3. Tile size: Make the tile size a configurable size, set 512x512 as default, if server provide a suggestion in image metadata data, then follow server suggestion.
+
+4. Channel Names. Channel Names information would be provided in the image metadata, such as {'0':'405nm', '1':'488nm', '2':'561nm', '3':'640nm'}.
+
+5. 3D Model Alignment. 
+
+The obj file 1.obj has values in v property like:
+
+v dim	value min	value max	mapped axis
+dim1	561.143188	6379.374023	x
+dim2	695.584717	5251.698242	z
+dim3	0.000000	7230.000000	-y
+
+Value unit in 10um.
+
+Image resolution in unit of um would be provided in the image metadata. For the provided 'z00000_c1_1.ims' "resolution 0" is 10um.
+
+
+
+If all current questions are answered, provide the full resulting plan.
+
+
+===========================================
+
+Perfect! Now I have all the information needed. Let me provide the complete implementation plan with all the details.
+
+## Complete VISoR Platform Implementation Plan
+
+### Final Architecture Overview
+
+```mermaid
+graph TB
+    subgraph "Frontend (Vue.js + TypeScript)"
+        A[Home Page] --> B[Atlas Viewer]
+        B --> C[ViewerGrid - 4 Panels]
+        C --> D[Sagittal View - YZ plane]
+        C --> E[Coronal View - XZ plane] 
+        C --> F[Horizontal View - XY plane]
+        C --> G[3D Brain Shell]
+        H[Control Panel] --> I[Metadata Tab]
+        H --> J[Channel Controls]
+        H --> K[Atlas Overlay]
+        H --> L[Region Browser]
+        M[Region Picker] --> N[Coordinate Transform]
+        O[Pinia Store] --> B
+        P[Vue Router] --> Q[URL State Management]
+    end
+    
+    subgraph "Backend (FastAPI + Python)"
+        R[FastAPI Server] --> S[Imaris Handler]
+        R --> T[Tile Service]
+        R --> U[Region Service]
+        R --> V[Metadata Service]
+        S --> W[HDF5 Image Data]
+        T --> X[Image Tiles JPEG]
+        T --> Y[Atlas Tiles PNG]
+        U --> Z[Region Hierarchy JSON]
+        AA[3D Model Service] --> BB[OBJ File Handler]
+        CC[Coordinate Transform] --> DD[View Mapping]
+    end
+    
+    subgraph "Data Layer"
+        EE[Image: z00000_c1_1.ims]
+        FF[Atlas: z00000_c1_mask.ims]
+        GG[Model: 1.obj]
+        HH[Regions: NIHMS696288-supplement-4.xlsx → JSON]
+    end
+    
+    subgraph "Infrastructure"
+        II[Docker Compose]
+        JJ[Redis Cache]
+        KK[Nginx Proxy]
+    end
+```
+
+### Complete Project Structure
+
+```
+cerevi/
+├── docker-compose.yml
+├── .env.example
+├── README.md
+├── data/                                    # Symbolic links
+│   ├── specimens/
+│   │   └── macaque_brain_rm009/
+│   │       ├── image.ims -> /share/data/VISoR_Reconstruction/...
+│   │       └── atlas.ims -> /share/data/VISoR_Reconstruction/.../mask.ims
+│   ├── models/
+│   │   └── macaque_brain_rm009/
+│   │       └── brain_shell.obj -> /mnt/xyy/SIAT_CAS/xu/tracing/.../1.obj
+│   └── regions/
+│       └── macaque_brain_regions.xlsx -> /mnt/xyy/SIAT_CAS/xu/.../NIHMS696288-supplement-4.xlsx
+├── frontend/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── tsconfig.json
+│   ├── tailwind.config.js
+│   ├── src/
+│   │   ├── main.ts
+│   │   ├── App.vue
+│   │   ├── router/
+│   │   │   └── index.ts
+│   │   ├── stores/
+│   │   │   ├── specimen.ts               # Specimen data management
+│   │   │   ├── viewer.ts                 # Viewer state (position, zoom, etc.)
+│   │   │   ├── region.ts                 # Region hierarchy and selection
+│   │   │   └── ui.ts                     # UI state (maximized view, etc.)
+│   │   ├── views/
+│   │   │   ├── HomePage.vue
+│   │   │   └── AtlasViewer.vue
+│   │   ├── components/
+│   │   │   ├── layout/
+│   │   │   │   ├── Header.vue
+│   │   │   │   └── Footer.vue
+│   │   │   ├── home/
+│   │   │   │   ├── HeroSection.vue
+│   │   │   │   ├── SpecimenGallery.vue
+│   │   │   │   └── SpecimenCard.vue
+│   │   │   ├── viewer/
+│   │   │   │   ├── ViewerGrid.vue        # 4-panel layout manager
+│   │   │   │   ├── ViewerPanel.vue       # Individual 2D/3D viewer
+│   │   │   │   ├── ViewMaximizer.vue     # Maximized single view
+│   │   │   │   ├── OpenSeadragonViewer.vue # 2D image viewer
+│   │   │   │   └── ThreeJSViewer.vue     # 3D brain shell viewer
+│   │   │   ├── controls/
+│   │   │   │   ├── ControlPanel.vue      # Left panel container
+│   │   │   │   ├── MetadataTab.vue       # Image info, dimensions
+│   │   │   │   ├── ChannelTab.vue        # Channel selection, contrast
+│   │   │   │   ├── AtlasTab.vue          # Atlas overlay controls
+│   │   │   │   └── RegionTab.vue         # Hierarchical region browser
+│   │   │   ├── region/
+│   │   │   │   ├── RegionTree.vue        # Hierarchical tree display
+│   │   │   │   ├── RegionSearch.vue      # Search regions
+│   │   │   │   └── RegionPicker.vue      # Click-to-pick functionality
+│   │   │   └── ui/
+│   │   │       ├── LanguageToggle.vue
+│   │   │       ├── LoadingSpinner.vue
+│   │   │       └── ErrorBoundary.vue
+│   │   ├── composables/
+│   │   │   ├── useOpenSeadragon.ts       # OpenSeadragon integration
+│   │   │   ├── useThreeJS.ts             # Three.js 3D visualization
+│   │   │   ├── useViewerLayout.ts        # Grid/maximize state management
+│   │   │   ├── useRegionPicker.ts        # Region picking logic
+│   │   │   ├── useCoordinateTransform.ts # View coordinate mapping
+│   │   │   ├── useImageControls.ts       # Brightness, contrast controls
+│   │   │   └── useUrlState.ts            # URL state synchronization
+│   │   ├── services/
+│   │   │   ├── api.ts                    # Main API client
+│   │   │   ├── tileService.ts            # Tile loading service
+│   │   │   └── coordinateService.ts      # Coordinate transformations
+│   │   ├── types/
+│   │   │   ├── specimen.ts
+│   │   │   ├── viewer.ts
+│   │   │   ├── region.ts
+│   │   │   └── api.ts
+│   │   ├── utils/
+│   │   │   ├── constants.ts
+│   │   │   ├── helpers.ts
+│   │   │   └── validation.ts
+│   │   ├── locales/
+│   │   │   ├── en.json
+│   │   │   └── zh.json
+│   │   └── assets/
+│   │       ├── images/
+│   │       └── styles/
+│   └── public/
+├── backend/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── config.py                     # Configuration management
+│   │   ├── models/
+│   │   │   ├── specimen.py               # Specimen data models
+│   │   │   ├── region.py                 # Region hierarchy models
+│   │   │   ├── metadata.py               # Image metadata models
+│   │   │   └── coordinate.py             # Coordinate system models
+│   │   ├── services/
+│   │   │   ├── imaris_handler.py         # .ims file reading
+│   │   │   ├── tile_service.py           # Tile generation
+│   │   │   ├── region_service.py         # Region data management
+│   │   │   ├── coordinate_service.py     # Coordinate transformations
+│   │   │   ├── obj_handler.py            # 3D model handling
+│   │   │   ├── metadata_service.py       # Image metadata extraction
+│   │   │   └── cache_service.py          # Redis caching
+│   │   ├── api/
+│   │   │   ├── specimens.py              # Specimen endpoints
+│   │   │   ├── tiles.py                  # Tile serving endpoints
+│   │   │   ├── regions.py                # Region endpoints
+│   │   │   ├── metadata.py               # Metadata endpoints
+│   │   │   └── models.py                 # 3D model endpoints
+│   │   ├── utils/
+│   │   │   ├── excel_parser.py           # Convert XLSX to JSON
+│   │   │   ├── image_processing.py       # Image manipulation
+│   │   │   ├── coordinate_math.py        # Coordinate calculations
+│   │   │   └── validation.py             # Input validation
+│   │   └── data/
+│   │       └── processed/
+│   │           └── regions.json          # Converted region hierarchy
+│   └── tests/
+├── nginx/
+│   ├── Dockerfile
+│   └── nginx.conf
+└── scripts/
+    ├── setup_data_links.sh               # Create symbolic links
+    ├── convert_regions.py                # Convert XLSX to JSON
+    └── init_dev_data.py                  # Initialize development data
+```
+
+### Coordinate System Implementation
+
+#### Backend Coordinate Service:
+```python
+class CoordinateService:
+    def __init__(self):
+        # Image array is in (z, y, x) order
+        # Right-handed coordinate system
+        self.view_mappings = {
+            'sagittal': {   # YZ plane (perpendicular to X-axis)
+                'array_axes': (0, 1),  # z, y from (z,y,x)
+                'display_axes': ('anterior-posterior', 'superior-inferior')
+            },
+            'coronal': {    # XZ plane (perpendicular to Y-axis)  
+                'array_axes': (0, 2),  # z, x from (z,y,x)
+                'display_axes': ('anterior-posterior', 'left-right')
+            },
+            'horizontal': { # XY plane (perpendicular to Z-axis)
+                'array_axes': (1, 2),  # y, x from (z,y,x)
+                'display_axes': ('superior-inferior', 'left-right')
+            }
+        }
+    
+    def get_slice_from_3d(self, data: np.ndarray, view: str, slice_idx: int) -> np.ndarray:
+        if view == 'sagittal':
+            return data[:, :, slice_idx]  # Fix X, vary Z,Y
+        elif view == 'coronal':
+            return data[:, slice_idx, :]  # Fix Y, vary Z,X
+        elif view == 'horizontal':
+            return data[slice_idx, :, :]  # Fix Z, vary Y,X
+    
+    def transform_3d_to_model(self, image_coords: tuple, resolution_um: float) -> tuple:
+        # Transform from image coordinates to 3D model coordinates
+        # Image resolution at level 0 is 10um
+        # Model coordinates are in 10um units
+        x, y, z = image_coords
+        model_x = x * resolution_um / 10.0
+        model_y = y * resolution_um / 10.0  
+        model_z = z * resolution_um / 10.0
+        return (model_x, model_z, -model_y)  # Note: Y becomes -Y in model
+```
+
+### Complete API Specification
+
+#### Core Endpoints:
+```python
+# Specimen Management
+GET /api/specimens                                    # List all specimens
+GET /api/specimens/{id}                              # Get specimen details
+GET /api/specimens/{id}/metadata                     # Complete metadata
+
+# Tile Serving (configurable tile size, default 512x512)
+GET /api/specimens/{id}/image/{view}/{level}/{z}/{x}/{y}?channel={ch}&tile_size={size}
+GET /api/specimens/{id}/atlas/{view}/{level}/{z}/{x}/{y}?tile_size={size}
+
+# Region System
+GET /api/specimens/{id}/regions                      # Complete region hierarchy
+GET /api/specimens/{id}/regions/{region_id}          # Specific region details
+POST /api/specimens/{id}/pick-region                 # Pick region from coordinates
+# Body: {"view": "sagittal", "x": 100, "y": 200, "z": 50, "level": 4}
+
+# 3D Models
+GET /api/specimens/{id}/model                        # Get 3D brain shell model
+GET /api/specimens/{id}/model/metadata               # Model alignment info
+
+# Metadata & Configuration
+GET /api/specimens/{id}/image-info                   # Dimensions, levels, channels
+GET /api/specimens/{id}/atlas-info                   # Atlas dimensions, levels
+GET /api/specimens/{id}/config                       # Suggested tile size, etc.
+```
+
+### Region Hierarchy Data Structure
+
+#### Converted JSON Format:
+```json
+{
+  "regions": [
+    {
+      "id": 1,
+      "name": "ventricles",
+      "abbreviation": "LV",
+      "level1": "ventricles",
+      "level2": "ventricles", 
+      "level3": "ventricles",
+      "level4": "ventricles",
+      "value": 1,
+      "parent_id": null,
+      "children": []
+    },
+    {
+      "id": 2,
+      "name": "medulla",
+      "abbreviation": "Md",
+      "level1": "hindbrain",
+      "level2": "myelencephalon",
+      "level3": "medulla",
+      "level4": "medulla",
+      "value": 2,
+      "parent_id": null,
+      "children": []
+    }
+  ],
+  "hierarchy": {
+    "hindbrain": {
+      "myelencephalon": ["medulla"],
+      "metencephalon": ["pons", "cerebellum"]
+    },
+    "midbrain": ["midbrain"],
+    "forebrain": {
+      "diencephalon": {
+        "p2": ["thalamus"]
+      }
+    }
+  }
+}
+```
+
+### Frontend State Management (Pinia Stores)
+
+#### Viewer Store:
+```typescript
+export const useViewerStore = defineStore('viewer', () => {
+  const currentView = ref<'grid' | 'sagittal' | 'coronal' | 'horizontal' | '3d'>('grid')
+  const viewerStates = ref({
+    sagittal: { position: [0, 0, 0], zoom: 1, slice: 0 },
+    coronal: { position: [0, 0, 0], zoom: 1, slice: 0 },
+    horizontal: { position: [0, 0, 0], zoom: 1, slice: 0 }
+  })
+  const synchronizeViews = ref(true)
+  const selectedRegion = ref<number | null>(null)
+  const channelSettings = ref({
+    activeChannels: [0],
+    brightness: { 0: 50, 1: 50, 2: 50, 3: 50 },
+    contrast: { 0: 50, 1: 50, 2: 50, 3: 50 }
+  })
+  
+  const maximizeView = (view: string) => {
+    currentView.value = view as any
+  }
+  
+  const syncPosition = (sourceView: string, position: number[]) => {
+    if (!synchronizeViews.value) return
+    // Update corresponding positions in other views
+  }
+  
+  return {
+    currentView, viewerStates, synchronizeViews, selectedRegion,
+    channelSettings, maximizeView, syncPosition
+  }
+})
+```
+
+### Performance & Caching Strategy
+
+#### Backend Caching:
+```python
+class CacheService:
+    def __init__(self):
+        self.redis = redis.Redis(host='redis', port=6379, db=0)
+        self.tile_cache_ttl = 3600  # 1 hour
+        self.metadata_cache_ttl = 86400  # 24 hours
+    
+    def get_tile_cache_key(self, specimen_id: str, tile_type: str, 
+                          view: str, level: int, z: int, x: int, y: int, **kwargs) -> str:
+        extras = "_".join([f"{k}={v}" for k, v in sorted(kwargs.items())])
+        return f"tile:{specimen_id}:{tile_type}:{view}:{level}:{z}:{x}:{y}:{extras}"
+    
+    async def get_cached_tile(self, cache_key: str) -> Optional[bytes]:
+        return await self.redis.get(cache_key)
+    
+    async def cache_tile(self, cache_key: str, tile_data: bytes):
+        await self.redis.setex(cache_key, self.tile_cache_ttl, tile_data)
+```
+
+#### Frontend Optimizations:
+- **Progressive loading**: Load low-resolution first, then high-resolution
+- **Viewport culling**: Only load visible tiles
+- **Memory management**: Dispose of off-screen tiles
+- **Debounced updates**: Prevent excessive API calls during navigation
+
+### Docker Composition
+
+#### docker-compose.yml:
+```yaml
+version: '3.8'
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+  
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./data:/app/data:ro
+    depends_on:
+      - redis
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 2gb --maxmemory-policy allkeys-lru
+  
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+```
+
+### Implementation Phases
+
+#### Phase 1: Data Setup & Infrastructure (Days 1-2)
+1. Create all symbolic links to data files
+2. Convert XLSX region hierarchy to JSON
+3. Set up basic Docker composition
+4. Test data access and file reading
+
+#### Phase 2: Backend Core (Days 3-5)
+1. Implement ImarisHandler for .ims files
+2. Create TileService with multi-resolution support
+3. Build coordinate transformation system
+4. Add caching layer with Redis
+
+#### Phase 3: API Implementation (Days 6-8)
+1. Create all REST endpoints
+2. Implement region picking logic
+3. Add 3D model serving
+4. Test with real data
+
+#### Phase 4: Frontend Foundation (Days 9-12)
+1. Set up Vue.js project with TypeScript
+2. Create routing and basic layout
+3. Implement Pinia stores
+4. Build ViewerGrid component
+
+#### Phase 5: 2D Visualization (Days 13-16)
+1. Integrate OpenSeadragon
+2. Implement multi-view synchronization
+3. Add region picking functionality
+4. Create control panels
+
+#### Phase 6: 3D Visualization (Days 17-19)
+1. Three.js integration for brain shell
+2. Coordinate alignment with 2D views
+3. Interactive controls
+
+#### Phase 7: Advanced Features (Days 20-23)
+1. Multi-channel support
+2. Region hierarchy browser
+3. Atlas overlay system
+4. URL state management
+
+#### Phase 8: Polish & Optimization (Days 24-26)
+1. Internationalization (EN/CN)
+2. Performance optimization
+3. Error handling and loading states
+4. Documentation and testing
+
+## Ready for Implementation
+
+This comprehensive plan covers all aspects of the VISoR platform with real data integration. The architecture is designed for:
+
+- **Scalability**: Modular structure, caching, efficient data handling
+- **Performance**: Progressive loading, viewport culling, optimized tile serving
+- **Usability**: Intuitive 4-panel layout, synchronized navigation, region picking
+- **Maintainability**: Clear separation of concerns, TypeScript types, comprehensive testing
+
+**To proceed with implementation, please toggle to Act mode** and I'll start building this sophisticated brain imaging platform step by step.
+
+
+==================
+
+Todo:
+
+Image compression (jpeg), compression workers.
+
+Leave region selection (pickup) to frontend.
+
+
+"remote.forwardOnOpen": true
+
+
+
+We are about to do the test:
+curl -s http://localhost:8000/health | python3 -m json.tool
+
+I got healthy result:
+
+(visor) xyy@xws:~/SIAT_CAS/visor_platform/code/cerevi$ curl -s http://localhost:8000/health | python3 -m json.tool
+{
+    "status": "healthy",
+    "version": "1.0.0",
+    "data_path_exists": true
+}
+(visor) xyy@xws:~/SIAT_CAS/visor_platform/code/cerevi$
+
+
+(visor) xyy@xws:~/SIAT_CAS/visor_platform/code/cerevi$ curl -s http://localhost:8000/api/specimens | python3 -m json.tool
+[
+    {
+        "id": "macaque_brain_rm009",
+        "name": "Macaque Brain RM009",
+        "species": "Macaca mulatta",
+        "description": "High-resolution macaque brain imaging with VISoR technology",
+        "has_image": true,
+        "has_atlas": true,
+        "has_model": true,
+        "channels": {
+            "0": "405nm",
+            "1": "488nm",
+            "2": "561nm",
+            "3": "640nm"
+        },
+        "resolution_um": 10.0,
+        "coordinate_system": "right_handed",
+        "axes_order": "z_y_x"
+    }
+]
+(visor) xyy@xws:~/SIAT_CAS/visor_platform/code/cerevi$
+
+
+
+curl -s "http://localhost:8000/api/specimens/macaque_brain_rm009/regions?max_results=5" | python3 -m json.tool
+
+export GTK_IM_MODULE=ibus
+export QT_IM_MODULE=ibus
+export XMODIFIERS="@im=ibus"
+
+
+
+
+Before proceeding with the Vue.js setup, I'd like to confirm a few details:
+
+1. What would you like to name the frontend application? (e.g., "visor-frontend", "visor-web", or something else?)
+2. Besides the standard Vue.js setup (TypeScript, Router, Pinia), should we include any additional build tools or development dependencies?
+3. Do you have any specific preferences for the UI framework (Element Plus, Vuetify, or others)?
+
+1. name it cere-viewer
+2. what build tools are you suggesting?
+3. Prefer Element Plus (performance-critical).
+
+
+(visor) xyy@xws:~/SIAT_CAS/visor_platform/code/cerevi$ cd frontend && npm create vue@latest . --typescript --router --pinia --eslint
+┌  Vue.js - The Progressive JavaScript Framework
+│
+◇  Package name:
+│  cere-viewer
+│
+◇  Select features to include in your project: (↑/↓ to navigate, space to select, a to toggle all,
+enter to confirm)
+│  TypeScript, Router (SPA development), Pinia (state management), Vitest (unit testing), ESLint
+(error prevention)
+│
+◇  Install Oxlint for faster linting? (experimental)
+│  No
+
+Scaffolding project in /home/xyy/SIAT_CAS/visor_platform/code/cerevi/frontend...
+│
+└  Done. Now run:
+
+   npm install
+   npm run dev
+
+| Optional: Initialize Git in your project directory with:
+   
+   git init && git add -A && git commit -m "initial commit"
+
+(visor) xyy@xws:~/SIAT_CAS/visor_platform/code/cerevi/frontend$ 
+
+
+-----
+
+(visor) xyy@xws:~/SIAT_CAS/visor_platform/code/cerevi$ cd frontend && npm install
+
+added 424 packages, and audited 425 packages in 1m
+
+114 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+(visor) xyy@xws:~/SIAT_CAS/visor_platform/code/cerevi/frontend$
+
+--------
+
+(visor) xyy@xws:~/SIAT_CAS/visor_platform/code/cerevi$ cd frontend && npm install openseadragon three @types/three element-plus @element-plus/icons-vue axios
+
+added 55 packages, and audited 480 packages in 15s
+
+126 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+(visor) xyy@xws:~/SIAT_CAS/visor_platform/code/cerevi/frontend$
+
+---------
+
+
+
+
+
+
